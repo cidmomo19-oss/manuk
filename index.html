@@ -4,65 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gateway</title>
+    <!-- CSS tidak ada perubahan -->
     <style>
-        /* CSS TIDAK ADA PERUBAHAN, SAMA SEPERTI SEBELUMNYA */
         html, body { 
-            height: 100%;
-            overflow: hidden; 
-            font-family: "Courier New", Courier, monospace; 
-            background-color: #ffffff; 
-            color: #000000; 
-            margin: 0; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            height: 100%; overflow: hidden; font-family: "Courier New", Courier, monospace; 
+            background-color: #ffffff; color: #000000; margin: 0; display: flex;
+            justify-content: center; align-items: center;
         }
         .panel { 
-            text-align: center; 
-            width: 100%; 
-            max-width: 350px; 
-            padding: 20px; 
+            text-align: center; width: 100%; max-width: 350px; padding: 20px; 
             transition: transform 0.3s ease-out;
         }
-        .panel.keyboard-active {
-            transform: translateY(-20vh);
-        }
-        h2 { 
-            margin-bottom: 5px; 
-            font-size: 22px; 
-            text-transform: lowercase; 
-        }
-        p { 
-            font-size: 14px; 
-            color: #555; 
-            margin-top: 0; 
-        }
+        .panel.keyboard-active { transform: translateY(-25vh); }
+        h2 { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
+        p { font-size: 14px; color: #555; margin-top: 0; }
         .input-line { 
-            width: 100%; 
-            border: none; 
-            border-bottom: 2px solid #000; 
-            background: transparent; 
-            font-size: 24px; 
-            padding: 10px 0; 
-            margin: 20px 0; 
-            outline: none; 
-            text-align: center; 
-            font-family: inherit; 
-            letter-spacing: 3px;
+            width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
+            font-size: 20px; padding: 10px 0; margin: 15px 0; outline: none; 
+            text-align: center; font-family: inherit;
         }
-        .input-line::placeholder { color: #ccc; font-size: 18px; letter-spacing: normal; }
+        #passwordInput { letter-spacing: 3px; }
+        .input-line::placeholder { color: #ccc; font-size: 16px; letter-spacing: normal; }
         button { 
-            background: #000; 
-            color: #fff; 
-            border: none; 
-            padding: 12px 20px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            font-family: inherit; 
-            width: 100%; 
-            text-transform: uppercase; 
-            font-weight: bold;
-            transition: 0.2s;
+            background: #000; color: #fff; border: none; padding: 12px 20px; font-size: 16px; 
+            cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; 
+            font-weight: bold; transition: 0.2s;
         }
         button:hover { background: #333; }
         button:disabled { background: #888; cursor: not-allowed; }
@@ -72,119 +38,100 @@
     </style>
 </head>
 <body>
-
-    <!-- HALAMAN USER -->
+    <!-- HTML tidak ada perubahan -->
     <div id="userPanel" class="panel">
         <h2>masukkan password</h2>
-        <input type="text" id="pin" class="input-line" maxlength="6" autocomplete="off" autofocus>
+        <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
         <button onclick="cekLink()" id="btnUser">Lanjut</button>
         <div id="errorMsg" class="error">password tidak valid.</div>
     </div>
-
-    <!-- HALAMAN ADMIN -->
     <div id="adminPanel" class="panel hidden">
-        <h2>tambah link</h2>
-        <p>masukkan url asli</p>
-        <input type="url" id="targetUrl" class="input-line" placeholder="https://..." style="font-size: 16px; letter-spacing: 0;">
+        <h2>buat password custom</h2>
+        <input type="url" id="targetUrl" class="input-line" placeholder="url asli">
+        <input type="text" id="customPassword" class="input-line" placeholder="password custom (misal: bukafile)">
         <button onclick="buatLink()" id="btnAdmin">Generate</button>
-        
         <div id="resultBox" class="hidden">
-            <p style="margin-top:30px; margin-bottom: 0;">id / password:</p>
+            <p style="margin-top:30px; margin-bottom: 0;">password custom:</p>
             <div id="resultPin" class="result"></div>
         </div>
     </div>
 
     <script>
-        // Deteksi URL, sama seperti sebelumnya
+        // Bagian awal script tidak ada perubahan
         if (window.location.search.includes('admin')) {
             document.getElementById('userPanel').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
         }
-
-        // Script keyboard mobile, sama seperti sebelumnya
         const allInputs = document.querySelectorAll('.input-line');
         allInputs.forEach(input => {
             input.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
             input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
         });
-
-        // ============================================
-        // PERUBAHAN UTAMA ADA DI FUNGSI INI
-        // ============================================
+        const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         async function cekLink() {
-            const pin = document.getElementById("pin").value.trim();
+            const password = document.getElementById("passwordInput").value.trim();
+            if(!password) return;
             const btn = document.getElementById("btnUser");
             const errorMsg = document.getElementById("errorMsg");
-
-            // Simpan link iklan di sini
-            const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
-
-            if(!pin) return;
-
             btn.innerText = "loading..."; btn.disabled = true; errorMsg.style.display = "none";
-
             try {
-                const res = await fetch(`/api/get/${pin}`);
+                const res = await fetch(`/api/get/${password}`);
                 if (res.ok) {
                     const data = await res.json();
-                    const targetUrl = data.url;
-
                     btn.innerText = "membuka...";
-
-                    // 1. Buka link asli di TAB BARU
-                    window.open(targetUrl, '_blank');
-
-                    // 2. Alihkan TAB SAAT INI ke link iklan (setelah jeda singkat)
-                    setTimeout(() => {
-                        window.location.href = adUrl;
-                    }, 200); // Jeda 200ms untuk memastikan tab baru sudah mulai terbuka
-
+                    window.open(data.url, '_blank');
+                    setTimeout(() => { window.location.href = adUrl; }, 200);
                 } else {
                     errorMsg.style.display = "block";
                     btn.innerText = "lanjut"; btn.disabled = false;
                 }
             } catch (err) {
-                errorMsg.innerText = "error jaringan.";
-                errorMsg.style.display = "block";
-                btn.innerText = "lanjut"; btn.disabled = false;
+                errorMsg.style.display = "block"; btn.innerText = "lanjut"; btn.disabled = false;
             }
         }
+        document.getElementById("passwordInput").addEventListener("keypress", (e) => { if (e.key === "Enter") cekLink(); });
 
-        // Fungsi Enter untuk submit User, sama seperti sebelumnya
-        document.getElementById("pin").addEventListener("keypress", (e) => { if (e.key === "Enter") cekLink(); });
-
-        // Fungsi Admin, TIDAK ADA PERUBAHAN
+        // ===========================================
+        // PERUBAHAN UTAMA DI FUNGSI INI
+        // ===========================================
         async function buatLink() {
             const targetUrl = document.getElementById("targetUrl").value.trim();
+            const customPassword = document.getElementById("customPassword").value.trim();
             const btn = document.getElementById("btnAdmin");
             const resultBox = document.getElementById("resultBox");
 
-            if (!targetUrl) return;
-
+            if (!targetUrl || !customPassword) {
+                alert("URL dan Password Custom wajib diisi!");
+                return;
+            }
             btn.innerText = "loading..."; btn.disabled = true;
 
             try {
                 const res = await fetch(`/api/create`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl })
+                    body: JSON.stringify({ url: targetUrl, password: customPassword })
                 });
 
-                if (res.ok) {
+                if (res.ok) { // Jika sukses (status 200 OK)
                     const data = await res.json();
-                    document.getElementById("resultPin").innerText = data.pin;
+                    document.getElementById("resultPin").innerText = data.password;
                     resultBox.classList.remove('hidden');
                     document.getElementById("targetUrl").value = ""; 
+                    document.getElementById("customPassword").value = ""; 
                 } else {
-                    alert("gagal membuat link.");
+                    // Jika GAGAL, cek statusnya
+                    if (res.status === 409) { // 409 Conflict berarti password duplikat
+                        alert("Gagal: Password '" + customPassword + "' sudah terpakai! Silakan gunakan password lain.");
+                    } else { // Error lainnya
+                        alert("Gagal membuat link. Cek kembali URL Anda.");
+                    }
                 }
-            } catch (err) { alert("error jaringan."); }
+            } catch (err) { alert("Error jaringan."); }
             
             btn.innerText = "generate"; btn.disabled = false;
         }
-
-        // Fungsi Enter untuk submit Admin, sama seperti sebelumnya
-        document.getElementById("targetUrl").addEventListener("keypress", (e) => { if (e.key === "Enter") buatLink(); });
-    </script>
+        document.getElementById("customPassword").addEventListener("keypress", (e) => { if (e.key === "Enter") buatLink(); });
+    </sCRIPT>
 </body>
 </html>
