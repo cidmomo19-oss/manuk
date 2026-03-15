@@ -3,282 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Selesaikan Tugas untuk Membuka Link</title>
+    <!-- PENTING: Lapis 1 Anti-Referrer -->
+    <meta name="referrer" content="no-referrer">
+    <title>Gateway</title>
     <style>
-        /* Desain Modern & Clean Minimalis */
+        /* KEMBALI KE DESAIN MINIMALIS CATBOX */
         html, body { 
-            height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f8f9fa; color: #111; margin: 0; display: flex;
+            height: 100%; overflow: hidden; font-family: "Courier New", Courier, monospace; 
+            background-color: #ffffff; color: #000000; margin: 0; display: flex;
             justify-content: center; align-items: center;
         }
         .panel { 
-            background: #fff; padding: 30px 25px; border-radius: 16px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; 
-            width: 100%; max-width: 380px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; width: 100%; max-width: 350px; padding: 20px; 
+            transition: transform 0.3s ease-out;
         }
-        .panel.keyboard-active { transform: translateY(-20vh); }
-        h2 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; }
-        p { font-size: 14px; color: #666; margin: 0 0 20px 0; }
+        .panel.keyboard-active { transform: translateY(-25vh); }
+        h2 { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
+        p { font-size: 14px; color: #555; margin-top: 0; }
         
-        /* Input Style */
+        /* Input Cuma Garis */
         .input-line { 
-            width: 100%; border: none; border-bottom: 2px solid #ddd; background: transparent; 
-            font-size: 22px; padding: 12px 0; margin: 20px 0; outline: none; 
-            text-align: center; font-weight: bold; transition: border-color 0.3s;
+            width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
+            font-size: 20px; padding: 10px 0; margin: 15px 0; outline: none; 
+            text-align: center; font-family: inherit;
         }
-        .input-line:focus { border-bottom-color: #000; }
-        .input-line::placeholder { color: #bbb; font-weight: normal; font-size: 16px; }
+        #passwordInput { letter-spacing: 3px; }
+        .input-line::placeholder { color: #ccc; font-size: 16px; letter-spacing: normal; }
         
-        /* Main Action Button */
-        .btn-main { 
-            background: #000; color: #fff; border: none; padding: 15px; border-radius: 8px;
-            font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; 
-            transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        /* Tombol Polos Hitam */
+        button { 
+            background: #000; color: #fff; border: 2px solid #000; padding: 12px 20px; font-size: 16px; 
+            cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; 
+            font-weight: bold; transition: 0.2s;
         }
-        .btn-main:hover { background: #333; transform: translateY(-2px); }
-        .btn-main:active { transform: translateY(0); }
-        .btn-main:disabled { background: #ccc; color: #888; cursor: not-allowed; transform: none; }
+        button:hover { background: #333; }
+        button:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
 
-        .error { color: #e74c3c; margin-top: 15px; display: none; font-size: 14px; font-weight: 500;}
+        .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; }
         .hidden { display: none !important; }
+        .result { margin-top: 30px; font-size: 32px; font-weight: bold; text-decoration: underline; }
 
-        /* --- PRO SUB4UNLOCK STYLES --- */
-        .task-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
-        .task-item {
-            background: #fff; border: 2px solid #eee; border-radius: 10px; padding: 14px 16px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: all 0.2s; text-decoration: none; color: #333; font-weight: 600;
+        /* Sub4Unlock Style Minimalis */
+        .task-list { display: flex; flex-direction: column; gap: 10px; margin: 25px 0; }
+        .task-btn {
+            background: #fff; color: #000; text-transform: lowercase; font-weight: normal;
+            border: 2px solid #000; text-align: left; padding: 12px 15px; font-size: 15px;
         }
-        .task-item:hover { border-color: #000; background: #fafafa; }
-        .task-item.locked { opacity: 0.6; pointer-events: none; background: #f5f5f5; }
-        .task-item.completed { border-color: #2ecc71; background: #f0fdf4; pointer-events: none; }
+        .task-btn:hover:not(:disabled) { background: #f0f0f0; }
+        .task-btn.completed { background: #000; color: #fff; border-color: #000; text-decoration: line-through; }
         
-        .task-left { display: flex; align-items: center; gap: 12px; }
-        .task-icon svg { width: 24px; height: 24px; }
-        .status-icon { width: 20px; height: 20px; color: #aaa; }
-        
-        .completed .status-icon { color: #2ecc71; }
-        .completed .task-text { color: #2ecc71; }
-
-        /* Animasi Loading Spinner (Memeriksa) */
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .spinner { animation: spin 1s linear infinite; color: #f39c12; }
-        
-        #progressText { font-size: 13px; color: #888; margin-top: 10px; font-weight: bold;}
+        /* Animasi kedip saat memeriksa */
+        @keyframes blink { 50% { opacity: 0.5; } }
+        .verifying { animation: blink 1s linear infinite; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <!-- HALAMAN USER (INPUT PASSWORD) -->
+    <!-- HALAMAN USER -->
     <div id="userPanel" class="panel">
-        <h2>Akses Link Terkunci</h2>
-        <p>Masukkan password untuk melanjutkan</p>
+        <h2>masukkan password</h2>
         <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
-        <button onclick="cekLink()" id="btnUser" class="btn-main">Lanjut</button>
-        <div id="errorMsg" class="error">Password tidak ditemukan.</div>
+        <button onclick="cekLink()" id="btnUser">Lanjut</button>
+        <div id="errorMsg" class="error">password tidak valid.</div>
     </div>
 
-    <!-- HALAMAN TUGAS (SUB4UNLOCK PRO) -->
+    <!-- HALAMAN TUGAS (SUB4UNLOCK) -->
     <div id="unlockPanel" class="panel hidden">
-        <h2>Selesaikan Tugas</h2>
-        <p>Selesaikan langkah di bawah untuk membuka link.</p>
+        <h2>selesaikan tugas</h2>
+        <p>klik secara berurutan.</p>
         
-        <div class="task-container">
-            <!-- TUGAS 1: SUBSCRIBE -->
-            <div id="task1" class="task-item" onclick="startTask(1, 'https://www.youtube.com/@kingbawok?sub_confirmation=1')">
-                <div class="task-left">
-                    <div class="task-icon">
-                        <!-- YouTube Icon SVG -->
-                        <svg viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    </div>
-                    <span class="task-text" id="text-task1">Subscribe Channel</span>
-                </div>
-                <!-- Chevron Icon Default -->
-                <svg id="status-task1" class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </div>
-
-            <!-- TUGAS 2: LIKE -->
-            <div id="task2" class="task-item locked" onclick="startTask(2, 'https://youtu.be/XrCTcBM480Y')">
-                <div class="task-left">
-                    <div class="task-icon">
-                        <!-- Like Icon SVG -->
-                        <svg viewBox="0 0 24 24" fill="#3ea6ff"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-                    </div>
-                    <span class="task-text" id="text-task2">Like Video</span>
-                </div>
-                <svg id="status-task2" class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </div>
-
-            <!-- TUGAS 3: WHATSAPP -->
-            <div id="task3" class="task-item locked" onclick="startTask(3, 'https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V')">
-                <div class="task-left">
-                    <div class="task-icon">
-                        <!-- WhatsApp Icon SVG -->
-                        <svg viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                    </div>
-                    <span class="task-text" id="text-task3">Join WhatsApp</span>
-                </div>
-                <svg id="status-task3" class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </div>
+        <div class="task-list">
+            <button id="task1" class="task-btn" onclick="startTask(1, 'https://www.youtube.com/@kingbawok?sub_confirmation=1')">[1] subscribe channel</button>
+            <button id="task2" class="task-btn" onclick="startTask(2, 'https://youtu.be/XrCTcBM480Y')" disabled>[2] like video</button>
+            <button id="task3" class="task-btn" onclick="startTask(3, 'https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V')" disabled>[3] join whatsapp</button>
         </div>
 
-        <button id="unlockButton" class="btn-main" onclick="finishUnlock()" disabled>
-            <!-- Lock Icon SVG -->
-            <svg id="btnIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-            <span id="btnText">Buka Link (0/3)</span>
-        </button>
-        <div id="progressText">Selesaikan tugas secara berurutan</div>
+        <button id="unlockButton" onclick="finishUnlock()" disabled>buka link (0/3)</button>
     </div>
 
-    <!-- HALAMAN ADMIN (Panel Bawah) -->
-    <div id="adminPanel" class="panel hidden" style="background: #111; color: white;">
-        <h2 style="color:white;">Admin Panel</h2>
-        <input type="url" id="targetUrl" class="input-line" style="border-color:#555; color:white;" placeholder="URL Asli Target">
-        <input type="text" id="customPassword" class="input-line" style="border-color:#555; color:white;" placeholder="Custom Password">
-        <button onclick="buatLink()" id="btnAdmin" class="btn-main" style="background:#2ecc71; color:#000;">Generate Link</button>
+    <!-- HALAMAN ADMIN -->
+    <div id="adminPanel" class="panel hidden">
+        <h2>tambah link</h2>
+        <input type="url" id="targetUrl" class="input-line" placeholder="url asli">
+        <input type="text" id="customPassword" class="input-line" placeholder="password custom">
+        <button onclick="buatLink()" id="btnAdmin">Generate</button>
+        
         <div id="resultBox" class="hidden">
-            <p style="margin-top:20px; color:#aaa;">Password Tersimpan:</p>
-            <div id="resultPin" style="font-size: 28px; font-weight: bold; color: #2ecc71;"></div>
+            <p style="margin-top:30px; margin-bottom: 0;">password custom:</p>
+            <div id="resultPin" class="result"></div>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI ---
+        // Setup Awal
         let finalTargetUrl = '';
         const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
-        
         let activeTask = 0;
-        let tasksStatus = { 1: false, 2: false, 3: false };
         let totalCompleted = 0;
 
-        // SVG Icons untuk status
-        const svgSpinner = `<svg class="status-icon spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>`;
-        const svgCheck = `<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`;
-        const svgUnlock = `<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>`;
-
-        // Cek mode admin
+        // Cek URL admin
         if (window.location.search.includes('admin')) {
-            document.body.style.background = "#000";
             document.getElementById('userPanel').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
         }
 
-        // --- LOGIKA UTAMA: PENGECEKAN PASSWORD ---
+        // Script keyboard mobile
+        document.querySelectorAll('.input-line').forEach(input => {
+            input.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
+            input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
+        });
+
+        // ==========================================
+        // FUNGSI ANTI-REFERRER (AMANKAN YOUTUBE)
+        // ==========================================
+        function openLinkSafely(url) {
+            // Lapis 2: Buat elemen <a> bayangan dengan atribut noreferrer
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noreferrer noopener'; // Menghapus jejak domain kamu
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // ==========================================
+        // LOGIKA USER & PASSWORD
+        // ==========================================
         async function cekLink() {
             const password = document.getElementById("passwordInput").value.trim();
             const btn = document.getElementById("btnUser");
             const errorMsg = document.getElementById("errorMsg");
 
             if(!password) return;
-            btn.innerHTML = "Memeriksa..."; btn.disabled = true; errorMsg.style.display = "none";
+            btn.innerText = "loading..."; btn.disabled = true; errorMsg.style.display = "none";
 
             try {
                 const res = await fetch(`/api/get/${password}`);
                 if (res.ok) {
                     const data = await res.json();
                     finalTargetUrl = data.url; 
-                    
                     document.getElementById('userPanel').classList.add('hidden');
                     document.getElementById('unlockPanel').classList.remove('hidden');
                 } else {
                     errorMsg.style.display = "block";
-                    btn.innerHTML = "Lanjut"; btn.disabled = false;
+                    btn.innerText = "lanjut"; btn.disabled = false;
                 }
             } catch (err) {
-                errorMsg.innerHTML = "Gangguan jaringan."; errorMsg.style.display = "block";
-                btn.innerHTML = "Lanjut"; btn.disabled = false;
+                errorMsg.innerText = "error jaringan."; errorMsg.style.display = "block";
+                btn.innerText = "lanjut"; btn.disabled = false;
             }
         }
         document.getElementById("passwordInput").addEventListener("keypress", (e) => { if (e.key === "Enter") cekLink(); });
 
-
-        // --- LOGIKA SUB4UNLOCK PRO DENGAN VERIFIKASI PALSU (DELAY) ---
+        // ==========================================
+        // LOGIKA SUB4UNLOCK (SIMULASI DELAY)
+        // ==========================================
         function startTask(taskId, url) {
-            if (tasksStatus[taskId] || activeTask !== 0) return; // Cegah klik dobel
+            if (activeTask !== 0) return; // Cegah klik ganda
 
             activeTask = taskId;
-            window.open(url, '_blank'); // Buka link YouTube/WA
-
-            // Ubah teks saat menunggu user kembali ke tab ini
-            document.getElementById(`text-task${taskId}`).innerText = "Menunggu aksi...";
+            openLinkSafely(url); // Buka tanpa referrer
+            
+            const btn = document.getElementById(`task${taskId}`);
+            btn.innerText = `[.] menunggu aksi...`;
         }
 
-        // Event Listener: Mendeteksi saat user berpindah tab dan KEMBALI ke tab kita
+        // Deteksi user balik ke web
         document.addEventListener("visibilitychange", () => {
-            // Jika user kembali ke tab kita (tab tidak tersembunyi lagi) dan ada task yang sedang berjalan
             if (!document.hidden && activeTask !== 0) {
                 verifyTask(activeTask);
             }
         });
 
         function verifyTask(taskId) {
-            const elStatus = document.getElementById(`status-task${taskId}`);
-            const elText = document.getElementById(`text-task${taskId}`);
+            const btn = document.getElementById(`task${taskId}`);
             
-            // 1. Munculkan animasi Verifying...
-            elStatus.outerHTML = svgSpinner.replace('status-icon', `status-icon id="status-task${taskId}"`);
-            elText.innerText = "Memeriksa...";
+            // 1. Ubah tulisan jadi memeriksa
+            btn.innerText = `[.] memeriksa...`;
+            btn.classList.add('verifying');
 
-            // 2. Berikan Delay 3 Detik (Membuat kesan sistem sedang mengecek ke YouTube)
+            // 2. Delay 3 detik biar kelihatan kayak sistem pro / aman dari ban YouTube
             setTimeout(() => {
                 // Selesai memeriksa
-                document.getElementById(`status-task${taskId}`).outerHTML = svgCheck.replace('status-icon', `status-icon id="status-task${taskId}"`);
-                document.getElementById(`text-task${taskId}`).innerText = "Selesai";
-                document.getElementById(`task${taskId}`).classList.add('completed');
-                
-                tasksStatus[taskId] = true;
+                btn.classList.remove('verifying');
+                btn.classList.add('completed');
+                btn.innerText = `[✓] selesai`;
+                btn.disabled = true;
+
                 totalCompleted++;
-                activeTask = 0; // Reset active task
+                activeTask = 0;
 
-                updateMainButton();
-
-                // Buka kunci tugas berikutnya (jika ada)
-                const nextTask = taskId + 1;
-                if (document.getElementById(`task${nextTask}`)) {
-                    document.getElementById(`task${nextTask}`).classList.remove('locked');
+                // Update tombol Buka Link
+                const unlockBtn = document.getElementById('unlockButton');
+                if (totalCompleted === 3) {
+                    unlockBtn.disabled = false;
+                    unlockBtn.innerText = "buka link target";
+                } else {
+                    unlockBtn.innerText = `buka link (${totalCompleted}/3)`;
                 }
 
-            }, 3000); // <-- 3000ms = 3 detik delay (Sangat aman untuk YouTube)
+                // Buka tugas berikutnya
+                const nextTask = taskId + 1;
+                const nextBtn = document.getElementById(`task${nextTask}`);
+                if (nextBtn) nextBtn.disabled = false;
+
+            }, 3000); // Waktu 3 detik
         }
 
-        function updateMainButton() {
-            const btn = document.getElementById('unlockButton');
-            const btnText = document.getElementById('btnText');
-            
-            if (totalCompleted === 3) {
-                btn.disabled = false;
-                btn.style.background = "#2ecc71"; // Hijau
-                btnText.innerText = "Dapatkan Link Asli";
-                document.getElementById('btnIcon').outerHTML = svgUnlock.replace('<svg', '<svg id="btnIcon"');
-                document.getElementById('progressText').innerText = "Verifikasi Berhasil!";
-                document.getElementById('progressText').style.color = "#2ecc71";
-            } else {
-                btnText.innerText = `Buka Link (${totalCompleted}/3)`;
-            }
-        }
-
-        // --- FUNGSI FINAL: REDIRECT ---
+        // ==========================================
+        // FUNGSI AKHIR (BUKA LINK ASLI & IKLAN)
+        // ==========================================
         function finishUnlock() {
             const btn = document.getElementById('unlockButton');
-            btn.innerHTML = "Mengalihkan...";
+            btn.innerText = "redirecting...";
             btn.disabled = true;
 
-            // Buka link asli
-            window.open(finalTargetUrl, '_blank');
+            // Buka link target dengan aman (No Referrer)
+            openLinkSafely(finalTargetUrl);
             
-            // Alihkan ke link iklan
+            // Tab saat ini jadi iklan
             setTimeout(() => { window.location.href = adUrl; }, 500);
         }
 
-        // --- FUNGSI ADMIN (TIDAK BERUBAH) ---
+        // ==========================================
+        // LOGIKA ADMIN
+        // ==========================================
         async function buatLink() {
             const targetUrl = document.getElementById("targetUrl").value.trim();
             const customPassword = document.getElementById("customPassword").value.trim();
             const btn = document.getElementById("btnAdmin");
             const resultBox = document.getElementById("resultBox");
 
-            if (!targetUrl || !customPassword) { alert("Isi form dengan lengkap!"); return; }
-            btn.innerText = "Processing..."; btn.disabled = true;
+            if (!targetUrl || !customPassword) return;
+            btn.innerText = "loading..."; btn.disabled = true;
 
             try {
                 const res = await fetch(`/api/create`, {
@@ -291,13 +249,18 @@
                     const data = await res.json();
                     document.getElementById("resultPin").innerText = data.password;
                     resultBox.classList.remove('hidden');
-                    document.getElementById("targetUrl").value = ""; document.getElementById("customPassword").value = ""; 
+                    document.getElementById("targetUrl").value = ""; 
+                    document.getElementById("customPassword").value = ""; 
                 } else if (res.status === 409) {
-                    alert("Error: Password sudah terpakai.");
+                    alert("error: password terpakai.");
+                } else {
+                    alert("gagal membuat link.");
                 }
-            } catch (err) { alert("Network Error"); }
-            btn.innerText = "Generate Link"; btn.disabled = false;
+            } catch (err) { alert("error jaringan."); }
+            
+            btn.innerText = "generate"; btn.disabled = false;
         }
+        document.getElementById("customPassword").addEventListener("keypress", (e) => { if (e.key === "Enter") buatLink(); });
     </script>
 </body>
 </html>
