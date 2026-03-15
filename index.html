@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gateway</title>
-    <!-- CSS tidak ada perubahan -->
     <style>
         html, body { 
             height: 100%; overflow: hidden; font-family: "Courier New", Courier, monospace; 
@@ -13,7 +12,7 @@
         }
         .panel { 
             text-align: center; width: 100%; max-width: 350px; padding: 20px; 
-            transition: transform 0.3s ease-out;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
         .panel.keyboard-active { transform: translateY(-25vh); }
         h2 { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
@@ -28,23 +27,46 @@
         button { 
             background: #000; color: #fff; border: none; padding: 12px 20px; font-size: 16px; 
             cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; 
-            font-weight: bold; transition: 0.2s;
+            font-weight: bold; transition: background-color 0.2s;
         }
         button:hover { background: #333; }
         button:disabled { background: #888; cursor: not-allowed; }
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; }
         .hidden { display: none; }
         .result { margin-top: 30px; font-size: 32px; font-weight: bold; text-decoration: underline; }
+
+        /* Style untuk Panel Tugas (Sub4Unlock) */
+        .task-list { list-style: none; padding: 0; margin: 20px 0; }
+        .task-list li { margin-bottom: 10px; }
+        .task-button { background-color: #d32f2f; /* Merah */ }
+        .task-button.completed { background-color: #28a745; /* Hijau */ }
+        .task-button.completed:before { content: '✓ '; }
+        #unlockButton { background-color: #555; }
     </style>
 </head>
 <body>
-    <!-- HTML tidak ada perubahan -->
+
+    <!-- HALAMAN USER (INPUT PASSWORD) -->
     <div id="userPanel" class="panel">
         <h2>masukkan password</h2>
         <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
         <button onclick="cekLink()" id="btnUser">Lanjut</button>
         <div id="errorMsg" class="error">password tidak valid.</div>
     </div>
+
+    <!-- HALAMAN TUGAS (SUB4UNLOCK) -->
+    <div id="unlockPanel" class="panel hidden">
+        <h2>selesaikan tugas</h2>
+        <p>klik semua tombol untuk membuka link</p>
+        <ul class="task-list">
+            <li><button id="task1" class="task-button" onclick="performAction(1, 'https://www.youtube.com/@kingbawok?sub_confirmation=1')">1. Subscribe Channel</button></li>
+            <li><button id="task2" class="task-button" onclick="performAction(2, 'https://youtu.be/XrCTcBM480Y')">2. Like Video</button></li>
+            <li><button id="task3" class="task-button" onclick="performAction(3, 'https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V')">3. Join WhatsApp</button></li>
+        </ul>
+        <button id="unlockButton" onclick="finishUnlock()" disabled>Buka Link</button>
+    </div>
+
+    <!-- HALAMAN ADMIN -->
     <div id="adminPanel" class="panel hidden">
         <h2>buat password custom</h2>
         <input type="url" id="targetUrl" class="input-line" placeholder="url asli">
@@ -57,30 +79,43 @@
     </div>
 
     <script>
-        // Bagian awal script tidak ada perubahan
+        // Variabel global untuk menyimpan status & data
+        let tasksCompleted = { 1: false, 2: false, 3: false };
+        let finalTargetUrl = '';
+        const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+        
+        // Cek URL untuk panel admin
         if (window.location.search.includes('admin')) {
             document.getElementById('userPanel').classList.add('hidden');
+            document.getElementById('unlockPanel').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
         }
+
+        // Script keyboard mobile
         const allInputs = document.querySelectorAll('.input-line');
         allInputs.forEach(input => {
             input.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
             input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
         });
-        const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+
+        // Fungsi User: Cek password lalu tampilkan panel tugas
         async function cekLink() {
             const password = document.getElementById("passwordInput").value.trim();
-            if(!password) return;
             const btn = document.getElementById("btnUser");
             const errorMsg = document.getElementById("errorMsg");
+
+            if(!password) return;
             btn.innerText = "loading..."; btn.disabled = true; errorMsg.style.display = "none";
+
             try {
                 const res = await fetch(`/api/get/${password}`);
                 if (res.ok) {
                     const data = await res.json();
-                    btn.innerText = "membuka...";
-                    window.open(data.url, '_blank');
-                    setTimeout(() => { window.location.href = adUrl; }, 200);
+                    finalTargetUrl = data.url; // Simpan URL target untuk nanti
+                    
+                    // Sembunyikan panel password, tampilkan panel tugas
+                    document.getElementById('userPanel').classList.add('hidden');
+                    document.getElementById('unlockPanel').classList.remove('hidden');
                 } else {
                     errorMsg.style.display = "block";
                     btn.innerText = "lanjut"; btn.disabled = false;
@@ -91,9 +126,42 @@
         }
         document.getElementById("passwordInput").addEventListener("keypress", (e) => { if (e.key === "Enter") cekLink(); });
 
-        // ===========================================
-        // PERUBAHAN UTAMA DI FUNGSI INI
-        // ===========================================
+        // Fungsi untuk menjalankan tugas (subscribe, like, join)
+        function performAction(taskNumber, url) {
+            if (tasksCompleted[taskNumber]) return; // Jangan lakukan apa-apa jika sudah diklik
+
+            // Buka link tugas di tab baru
+            window.open(url, '_blank');
+
+            // Tandai tugas sebagai selesai
+            tasksCompleted[taskNumber] = true;
+            const taskButton = document.getElementById(`task${taskNumber}`);
+            taskButton.classList.add('completed');
+            taskButton.disabled = true;
+
+            // Cek apakah semua tugas sudah selesai
+            checkAllTasksCompleted();
+        }
+
+        // Fungsi untuk mengecek apakah semua tugas selesai
+        function checkAllTasksCompleted() {
+            if (tasksCompleted[1] && tasksCompleted[2] && tasksCompleted[3]) {
+                const unlockButton = document.getElementById('unlockButton');
+                unlockButton.disabled = false;
+                unlockButton.style.backgroundColor = '#000'; // Aktifkan tombol (jadi hitam)
+                unlockButton.innerText = "✓ Link Terbuka";
+            }
+        }
+
+        // Fungsi final setelah semua tugas selesai
+        function finishUnlock() {
+            // Buka link asli di tab baru
+            window.open(finalTargetUrl, '_blank');
+            // Alihkan tab saat ini ke iklan
+            setTimeout(() => { window.location.href = adUrl; }, 200);
+        }
+
+        // Fungsi Admin (TIDAK BERUBAH)
         async function buatLink() {
             const targetUrl = document.getElementById("targetUrl").value.trim();
             const customPassword = document.getElementById("customPassword").value.trim();
@@ -113,18 +181,17 @@
                     body: JSON.stringify({ url: targetUrl, password: customPassword })
                 });
 
-                if (res.ok) { // Jika sukses (status 200 OK)
+                if (res.ok) {
                     const data = await res.json();
                     document.getElementById("resultPin").innerText = data.password;
                     resultBox.classList.remove('hidden');
                     document.getElementById("targetUrl").value = ""; 
                     document.getElementById("customPassword").value = ""; 
                 } else {
-                    // Jika GAGAL, cek statusnya
-                    if (res.status === 409) { // 409 Conflict berarti password duplikat
-                        alert("Gagal: Password '" + customPassword + "' sudah terpakai! Silakan gunakan password lain.");
-                    } else { // Error lainnya
-                        alert("Gagal membuat link. Cek kembali URL Anda.");
+                    if (res.status === 409) {
+                        alert("Gagal: Password '" + customPassword + "' sudah terpakai!");
+                    } else {
+                        alert("Gagal membuat link.");
                     }
                 }
             } catch (err) { alert("Error jaringan."); }
@@ -132,6 +199,7 @@
             btn.innerText = "generate"; btn.disabled = false;
         }
         document.getElementById("customPassword").addEventListener("keypress", (e) => { if (e.key === "Enter") buatLink(); });
-    </sCRIPT>
+
+    </script>
 </body>
 </html>
