@@ -3,15 +3,14 @@ export default {
     const url = new URL(request.url);
 
     // ==========================================
-    // 1. API BUAT LINK (ADMIN PANEL)
+    // 1. API BUAT LINK (Tanpa Password)
     // ==========================================
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
         
-        // Ganti password admin di sini
-        if (body.adminSecret !== "rahasia123") {
-          return new Response("Unauthorized", { status: 401 });
+        if (!body.url) {
+            return new Response("URL Kosong", { status: 400 });
         }
 
         // Generate 6 Digit PIN acak
@@ -29,20 +28,18 @@ export default {
     }
 
     // ==========================================
-    // 2. API CEK PIN + CACHE 1 BULAN (USER)
+    // 2. API CEK PIN + CACHE 1 BULAN
     // ==========================================
     if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
-      const pin = url.pathname.split("/").pop(); // Ambil PIN dari URL
+      const pin = url.pathname.split("/").pop();
       
       const cacheUrl = new URL(request.url);
       const cacheKey = new Request(cacheUrl.toString(), request);
       const cache = caches.default;
 
-      // Cek di Cache Edge Cloudflare dulu
       let response = await cache.match(cacheKey);
 
       if (!response) {
-        // Kalo gak ada di cache, baru baca dari KV (Hemat Kuota KV!)
         const targetUrl = await env.LINK_DB.get(pin);
 
         if (!targetUrl) {
@@ -51,7 +48,7 @@ export default {
           });
         }
 
-        // Buat Response & Set Cache 1 Bulan (2592000 detik)
+        // Simpan ke cache 1 Bulan
         response = new Response(JSON.stringify({ url: targetUrl }), {
           headers: {
             'Content-Type': 'application/json',
@@ -59,7 +56,6 @@ export default {
           }
         });
 
-        // Simpan ke Cache
         ctx.waitUntil(cache.put(cacheKey, response.clone()));
       }
 
