@@ -2,26 +2,36 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PENTING: Meta tag untuk anti-zoom dan layout mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gateway</title>
     <style>
         /* Desain Minimalis ala Catbox */
-        body { 
+        html, body { 
+            height: 100%;
+            overflow: hidden; /* Mencegah scroll di seluruh halaman */
             font-family: "Courier New", Courier, monospace; 
             background-color: #ffffff; 
             color: #000000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
             margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .panel { 
             text-align: center; 
             width: 100%; 
             max-width: 350px; 
             padding: 20px; 
+            /* Animasi halus saat panel bergerak naik/turun */
+            transition: transform 0.3s ease-out;
         }
+        
+        /* Class ini akan ditambahkan oleh JavaScript saat keyboard aktif */
+        .panel.keyboard-active {
+            transform: translateY(-20vh); /* Geser ke atas sebesar 20% tinggi layar */
+        }
+
         h2 { 
             margin-bottom: 5px; 
             font-size: 22px; 
@@ -101,6 +111,30 @@
             document.getElementById('adminPanel').classList.remove('hidden');
         }
 
+        // ============================================
+        // SCRIPT UNTUK ATASI KEYBOARD MOBILE (iPhone & Android)
+        // ============================================
+        const allInputs = document.querySelectorAll('.input-line');
+
+        allInputs.forEach(input => {
+            // Saat user tap input (keyboard akan muncul)
+            input.addEventListener('focus', (e) => {
+                const parentPanel = e.target.closest('.panel');
+                if (parentPanel) {
+                    parentPanel.classList.add('keyboard-active');
+                }
+            });
+
+            // Saat user selesai ngetik/tap di luar input (keyboard akan hilang)
+            input.addEventListener('blur', (e) => {
+                const parentPanel = e.target.closest('.panel');
+                if (parentPanel) {
+                    parentPanel.classList.remove('keyboard-active');
+                }
+            });
+        });
+
+
         // Fungsi User (Cek PIN)
         async function cekLink() {
             const pin = document.getElementById("pin").value.trim();
@@ -133,7 +167,7 @@
             if (e.key === "Enter") cekLink();
         });
 
-        // Fungsi Admin (Buat Link Tanpa Password)
+        // Fungsi Admin (Buat Link)
         async function buatLink() {
             const targetUrl = document.getElementById("targetUrl").value.trim();
             const btn = document.getElementById("btnAdmin");
@@ -147,7 +181,7 @@
                 const res = await fetch(`/api/create`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl }) // Admin secret dibuang dari sini
+                    body: JSON.stringify({ url: targetUrl })
                 });
 
                 if (res.ok) {
