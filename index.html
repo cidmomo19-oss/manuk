@@ -2,14 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- PENTING: Meta tag untuk anti-zoom dan layout mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gateway</title>
     <style>
-        /* Desain Minimalis ala Catbox */
+        /* CSS TIDAK ADA PERUBAHAN, SAMA SEPERTI SEBELUMNYA */
         html, body { 
             height: 100%;
-            overflow: hidden; /* Mencegah scroll di seluruh halaman */
+            overflow: hidden; 
             font-family: "Courier New", Courier, monospace; 
             background-color: #ffffff; 
             color: #000000; 
@@ -23,15 +22,11 @@
             width: 100%; 
             max-width: 350px; 
             padding: 20px; 
-            /* Animasi halus saat panel bergerak naik/turun */
             transition: transform 0.3s ease-out;
         }
-        
-        /* Class ini akan ditambahkan oleh JavaScript saat keyboard aktif */
         .panel.keyboard-active {
-            transform: translateY(-20vh); /* Geser ke atas sebesar 20% tinggi layar */
+            transform: translateY(-20vh);
         }
-
         h2 { 
             margin-bottom: 5px; 
             font-size: 22px; 
@@ -42,8 +37,6 @@
             color: #555; 
             margin-top: 0; 
         }
-        
-        /* Input Cuma Garis Bawah */
         .input-line { 
             width: 100%; 
             border: none; 
@@ -58,8 +51,6 @@
             letter-spacing: 3px;
         }
         .input-line::placeholder { color: #ccc; font-size: 18px; letter-spacing: normal; }
-
-        /* Tombol Polos Hitam */
         button { 
             background: #000; 
             color: #fff; 
@@ -75,7 +66,6 @@
         }
         button:hover { background: #333; }
         button:disabled { background: #888; cursor: not-allowed; }
-
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; }
         .hidden { display: none; }
         .result { margin-top: 30px; font-size: 32px; font-weight: bold; text-decoration: underline; }
@@ -105,41 +95,29 @@
     </div>
 
     <script>
-        // Deteksi URL: kalau ada ?admin, munculkan halaman tambah link
+        // Deteksi URL, sama seperti sebelumnya
         if (window.location.search.includes('admin')) {
             document.getElementById('userPanel').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
         }
 
-        // ============================================
-        // SCRIPT UNTUK ATASI KEYBOARD MOBILE (iPhone & Android)
-        // ============================================
+        // Script keyboard mobile, sama seperti sebelumnya
         const allInputs = document.querySelectorAll('.input-line');
-
         allInputs.forEach(input => {
-            // Saat user tap input (keyboard akan muncul)
-            input.addEventListener('focus', (e) => {
-                const parentPanel = e.target.closest('.panel');
-                if (parentPanel) {
-                    parentPanel.classList.add('keyboard-active');
-                }
-            });
-
-            // Saat user selesai ngetik/tap di luar input (keyboard akan hilang)
-            input.addEventListener('blur', (e) => {
-                const parentPanel = e.target.closest('.panel');
-                if (parentPanel) {
-                    parentPanel.classList.remove('keyboard-active');
-                }
-            });
+            input.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
+            input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
         });
 
-
-        // Fungsi User (Cek PIN)
+        // ============================================
+        // PERUBAHAN UTAMA ADA DI FUNGSI INI
+        // ============================================
         async function cekLink() {
             const pin = document.getElementById("pin").value.trim();
             const btn = document.getElementById("btnUser");
             const errorMsg = document.getElementById("errorMsg");
+
+            // Simpan link iklan di sini
+            const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
 
             if(!pin) return;
 
@@ -149,8 +127,18 @@
                 const res = await fetch(`/api/get/${pin}`);
                 if (res.ok) {
                     const data = await res.json();
-                    btn.innerText = "redirecting...";
-                    window.location.href = data.url; 
+                    const targetUrl = data.url;
+
+                    btn.innerText = "membuka...";
+
+                    // 1. Buka link asli di TAB BARU
+                    window.open(targetUrl, '_blank');
+
+                    // 2. Alihkan TAB SAAT INI ke link iklan (setelah jeda singkat)
+                    setTimeout(() => {
+                        window.location.href = adUrl;
+                    }, 200); // Jeda 200ms untuk memastikan tab baru sudah mulai terbuka
+
                 } else {
                     errorMsg.style.display = "block";
                     btn.innerText = "lanjut"; btn.disabled = false;
@@ -162,12 +150,10 @@
             }
         }
 
-        // Enter untuk submit User
-        document.getElementById("pin").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") cekLink();
-        });
+        // Fungsi Enter untuk submit User, sama seperti sebelumnya
+        document.getElementById("pin").addEventListener("keypress", (e) => { if (e.key === "Enter") cekLink(); });
 
-        // Fungsi Admin (Buat Link)
+        // Fungsi Admin, TIDAK ADA PERUBAHAN
         async function buatLink() {
             const targetUrl = document.getElementById("targetUrl").value.trim();
             const btn = document.getElementById("btnAdmin");
@@ -197,10 +183,8 @@
             btn.innerText = "generate"; btn.disabled = false;
         }
 
-        // Enter untuk submit Admin
-        document.getElementById("targetUrl").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") buatLink();
-        });
+        // Fungsi Enter untuk submit Admin, sama seperti sebelumnya
+        document.getElementById("targetUrl").addEventListener("keypress", (e) => { if (e.key === "Enter") buatLink(); });
     </script>
 </body>
 </html>
