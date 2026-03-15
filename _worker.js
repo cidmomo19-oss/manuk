@@ -3,23 +3,31 @@ export default {
     const url = new URL(request.url);
 
     // ==========================================
-    // 1. API BUAT LINK (Tanpa Password)
+    // 1. API BUAT LINK (DENGAN PENGECEKAN DUPLIKAT)
     // ==========================================
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
-        
-        if (!body.url) {
-            return new Response("URL Kosong", { status: 400 });
+        const { url: targetUrl, password } = body;
+
+        if (!targetUrl || !password) {
+            return new Response("URL dan Password wajib diisi", { status: 400 });
         }
 
-        // Generate 6 Digit PIN acak
-        const pin = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Simpan ke KV (Nama binding harus: LINK_DB)
-        await env.LINK_DB.put(pin, body.url);
+        // =======================================
+        // TAMBAHAN: CEK DULU APAKAH PASSWORD SUDAH ADA
+        // =======================================
+        const existingLink = await env.LINK_DB.get(password);
+        if (existingLink !== null) {
+            // Jika ada, kirim status 409 Conflict (artinya konflik/bentrok)
+            return new Response("Password sudah terpakai.", { status: 409 });
+        }
+        // =======================================
 
-        return new Response(JSON.stringify({ pin: pin }), {
+        // Jika aman, baru simpan ke KV
+        await env.LINK_DB.put(password, targetUrl);
+
+        return new Response(JSON.stringify({ password: password }), {
           headers: { 'Content-Type': 'application/json' }
         });
       } catch (err) {
@@ -27,44 +35,27 @@ export default {
       }
     }
 
-    // ==========================================
-    // 2. API CEK PIN + CACHE 1 BULAN
-    // ==========================================
+    // API GET (Tidak ada perubahan)
     if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
-      const pin = url.pathname.split("/").pop();
-      
-      const cacheUrl = new URL(request.url);
-      const cacheKey = new Request(cacheUrl.toString(), request);
+      const password = url.pathname.split("/").pop();
       const cache = caches.default;
-
+      const cacheKey = new Request(new URL(request.url), request);
       let response = await cache.match(cacheKey);
 
       if (!response) {
-        const targetUrl = await env.LINK_DB.get(pin);
-
+        const targetUrl = await env.LINK_DB.get(password);
         if (!targetUrl) {
-          return new Response(JSON.stringify({ error: "Not Found" }), { 
-            status: 404, headers: { 'Content-Type': 'application/json' }
-          });
+          return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { 'Content-Type': 'application/json' }});
         }
-
-        // Simpan ke cache 1 Bulan
         response = new Response(JSON.stringify({ url: targetUrl }), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=2592000'
-          }
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=2592000' }
         });
-
         ctx.waitUntil(cache.put(cacheKey, response.clone()));
       }
-
       return response;
     }
 
-    // ==========================================
-    // 3. DEFAULT: TAMPILKAN INDEX.HTML
-    // ==========================================
+    // Default: Tampilkan HTML
     return env.ASSETS.fetch(request);
   }
 };
