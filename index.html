@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway</title>
     <style>
-        /* KEMBALI KE DESAIN MINIMALIS CATBOX */
+        /* DESAIN MINIMALIS CATBOX BASE */
         html, body { 
             height: 100%; overflow: hidden; font-family: "Courier New", Courier, monospace; 
             background-color: #ffffff; color: #000000; margin: 0; display: flex;
@@ -30,27 +30,46 @@
         #passwordInput { letter-spacing: 3px; }
         .input-line::placeholder { color: #ccc; font-size: 16px; letter-spacing: normal; }
         
-        /* Tombol Polos Hitam */
-        button { 
+        /* Tombol Utama (Buka Link / Lanjut) */
+        .btn-main { 
             background: #000; color: #fff; border: 2px solid #000; padding: 12px 20px; font-size: 16px; 
             cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; 
             font-weight: bold; transition: 0.2s;
         }
-        button:hover { background: #333; }
-        button:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
+        .btn-main:hover { background: #333; }
+        .btn-main:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
 
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; }
         .hidden { display: none !important; }
         .result { margin-top: 30px; font-size: 32px; font-weight: bold; text-decoration: underline; }
 
-        /* Sub4Unlock Style Minimalis */
+        /* ==========================================
+           TOMBOL SUB4UNLOCK WARNA-WARNI
+           ========================================== */
         .task-list { display: flex; flex-direction: column; gap: 10px; margin: 25px 0; }
         .task-btn {
-            background: #fff; color: #000; text-transform: lowercase; font-weight: normal;
+            text-transform: lowercase; font-weight: bold; font-family: inherit;
             border: 2px solid #000; text-align: left; padding: 12px 15px; font-size: 15px;
+            transition: 0.2s; cursor: pointer; outline: none;
         }
-        .task-btn:hover:not(:disabled) { background: #f0f0f0; }
-        .task-btn.completed { background: #000; color: #fff; border-color: #000; text-decoration: line-through; }
+
+        /* 1. Warna Merah (YouTube Sub) saat Aktif */
+        #task1:not(:disabled):not(.completed) { background: #ff0000; color: #fff; border-color: #ff0000; }
+        #task1:not(:disabled):not(.completed):hover { background: #cc0000; border-color: #cc0000; }
+
+        /* 2. Warna Biru (YouTube Like) saat Aktif */
+        #task2:not(:disabled):not(.completed) { background: #007bff; color: #fff; border-color: #007bff; }
+        #task2:not(:disabled):not(.completed):hover { background: #0056b3; border-color: #0056b3; }
+
+        /* 3. Warna Hijau (WhatsApp) saat Aktif */
+        #task3:not(:disabled):not(.completed) { background: #25D366; color: #fff; border-color: #25D366; }
+        #task3:not(:disabled):not(.completed):hover { background: #1da851; border-color: #1da851; }
+
+        /* Kondisi Terkunci (Menunggu giliran) */
+        .task-btn:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; font-weight: normal; }
+        
+        /* Kondisi Selesai (Hitam & Dicoret) */
+        .task-btn.completed { background: #000; color: #fff; border-color: #000; text-decoration: line-through; cursor: not-allowed; }
         
         /* Animasi kedip saat memeriksa */
         @keyframes blink { 50% { opacity: 0.5; } }
@@ -63,7 +82,7 @@
     <div id="userPanel" class="panel">
         <h2>masukkan password</h2>
         <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
-        <button onclick="cekLink()" id="btnUser">Lanjut</button>
+        <button onclick="cekLink()" id="btnUser" class="btn-main">Lanjut</button>
         <div id="errorMsg" class="error">password tidak valid.</div>
     </div>
 
@@ -78,7 +97,7 @@
             <button id="task3" class="task-btn" onclick="startTask(3, 'https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V')" disabled>[3] join whatsapp</button>
         </div>
 
-        <button id="unlockButton" onclick="finishUnlock()" disabled>buka link (0/3)</button>
+        <button id="unlockButton" class="btn-main" onclick="finishUnlock()" disabled>buka link (0/3)</button>
     </div>
 
     <!-- HALAMAN ADMIN -->
@@ -86,7 +105,7 @@
         <h2>tambah link</h2>
         <input type="url" id="targetUrl" class="input-line" placeholder="url asli">
         <input type="text" id="customPassword" class="input-line" placeholder="password custom">
-        <button onclick="buatLink()" id="btnAdmin">Generate</button>
+        <button onclick="buatLink()" id="btnAdmin" class="btn-main">Generate</button>
         
         <div id="resultBox" class="hidden">
             <p style="margin-top:30px; margin-bottom: 0;">password custom:</p>
@@ -117,11 +136,10 @@
         // FUNGSI ANTI-REFERRER (AMANKAN YOUTUBE)
         // ==========================================
         function openLinkSafely(url) {
-            // Lapis 2: Buat elemen <a> bayangan dengan atribut noreferrer
             const a = document.createElement('a');
             a.href = url;
             a.target = '_blank';
-            a.rel = 'noreferrer noopener'; // Menghapus jejak domain kamu
+            a.rel = 'noreferrer noopener'; 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -163,7 +181,7 @@
             if (activeTask !== 0) return; // Cegah klik ganda
 
             activeTask = taskId;
-            openLinkSafely(url); // Buka tanpa referrer
+            openLinkSafely(url); // Buka aman tanpa referer
             
             const btn = document.getElementById(`task${taskId}`);
             btn.innerText = `[.] menunggu aksi...`;
@@ -183,7 +201,7 @@
             btn.innerText = `[.] memeriksa...`;
             btn.classList.add('verifying');
 
-            // 2. Delay 3 detik biar kelihatan kayak sistem pro / aman dari ban YouTube
+            // 2. Delay 3 detik biar kelihatan kayak sistem pro
             setTimeout(() => {
                 // Selesai memeriksa
                 btn.classList.remove('verifying');
@@ -194,7 +212,7 @@
                 totalCompleted++;
                 activeTask = 0;
 
-                // Update tombol Buka Link
+                // Update tombol Buka Link Utama
                 const unlockBtn = document.getElementById('unlockButton');
                 if (totalCompleted === 3) {
                     unlockBtn.disabled = false;
@@ -203,7 +221,7 @@
                     unlockBtn.innerText = `buka link (${totalCompleted}/3)`;
                 }
 
-                // Buka tugas berikutnya
+                // Buka kunci tugas berikutnya (warna akan otomatis nyala)
                 const nextTask = taskId + 1;
                 const nextBtn = document.getElementById(`task${nextTask}`);
                 if (nextBtn) nextBtn.disabled = false;
@@ -219,7 +237,7 @@
             btn.innerText = "redirecting...";
             btn.disabled = true;
 
-            // Buka link target dengan aman (No Referrer)
+            // Buka link target (Aman No Referrer)
             openLinkSafely(finalTargetUrl);
             
             // Tab saat ini jadi iklan
