@@ -124,14 +124,14 @@
                     <div class="task-icon"><svg viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
                     <span class="task-text" id="text-task1">Subscribe Channel</span>
                 </div>
-                <!-- PENTING: Dibungkus span agar ID tidak hilang saat icon direplace -->
                 <span id="container-status1"><svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
             </div>
 
-            <div id="task2" class="task-item locked" onclick="startTask(2, 'https://youtu.be/falVf97gEeA')">
+            <!-- TEKS SUDAH DIUBAH MENJADI: "Like & Komen" -->
+            <div id="task2" class="task-item locked" onclick="startTask(2, 'dynamic')">
                 <div class="task-left">
                     <div class="task-icon"><svg viewBox="0 0 24 24" fill="#007bff"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></div>
-                    <span class="task-text" id="text-task2">Like Video</span>
+                    <span class="task-text" id="text-task2">Like & Komen Video</span>
                 </div>
                 <span id="container-status2"><svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
             </div>
@@ -163,6 +163,23 @@
     </div>
 
     <script>
+        // ==========================================================
+        // KONFIGURASI ROTASI VIDEO: Cara menambah video sendiri
+        // Tambahkan link di bawah dengan cara copas "URL", 
+        // Ingat koma ( , ) di akhir link KECUALI yang paling terakhir
+        // ==========================================================
+        const videoRotasi = [
+            "https://youtu.be/UHOiZGmsbLs?si=5YUhuR1gX1WEZWTV",
+            "https://youtu.be/falVf97gEeA?si=Mksp3oYVbQWixf-f",
+            "https://youtu.be/XrCTcBM480Y?si=gbkGqNfh6QOcxXwx",
+            "https://youtu.be/R0rCpSS8GNc?si=yddRgAlwbn8BO46E",
+            "https://youtu.be/brZT5GYNKSI?si=UblbTj3utT8zfPE9",
+            "https://youtu.be/u9G5pJhpoJI?si=FEUofy-QRbZs05va",
+            "https://youtu.be/ioC1wHxvbFQ?si=hqcH0fVHrobTsKis",
+            "https://youtu.be/0OCa4I2UkUo?si=8fbCkYbBT_QAPL8D" // <--- kalau nambah video di sini harus dikasih KOMA (,)
+            // , "https://youtu.be/CONTOH-LINK-BARU"   <--  Contoh cara menambahkan baru
+        ];
+
         let finalTargetUrl = '';
         const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         let activeTask = 0;
@@ -224,14 +241,32 @@
             if (activeTask !== 0) return; 
 
             activeTask = taskId;
-            openLinkSafely(url); 
+            let finalUrl = url;
+
+            if (taskId === 2) {
+                // BUGFIX: Menangani kondisi memori kosong agar tidak 'NaN'
+                let savedIndex = localStorage.getItem('savedVideoIndex');
+                let currentIndex = 0; // Default adalah index 0 (Video pertama)
+
+                if (savedIndex !== null && !isNaN(parseInt(savedIndex))) {
+                    currentIndex = parseInt(savedIndex);
+                    // Mencegah error kalau list dikurangin: Jika memory bilang dia di index ke-15 padahal videomu sisa 3
+                    if (currentIndex >= videoRotasi.length) {
+                        currentIndex = 0; 
+                    }
+                }
+                
+                finalUrl = videoRotasi[currentIndex];
+                let nextIndex = (currentIndex + 1) % videoRotasi.length;
+                localStorage.setItem('savedVideoIndex', nextIndex);
+            }
+
+            openLinkSafely(finalUrl); 
             document.getElementById(`text-task${taskId}`).innerText = "Menunggu aksi...";
         }
 
         document.addEventListener("visibilitychange", () => {
             if (!document.hidden && activeTask !== 0) {
-                // BUG BOLAK-BALIK TAB DIPERBAIKI DI SINI
-                // Pindahkan ID ke variabel lokal, lalu langsung nol-kan activeTask agar tidak ter-trigger berulang kali
                 let currentTask = activeTask;
                 activeTask = 0; 
                 verifyTask(currentTask);
@@ -242,13 +277,10 @@
             const elContainer = document.getElementById(`container-status${taskId}`);
             const elText = document.getElementById(`text-task${taskId}`);
             
-            // BUG REPLACE STRING DIPERBAIKI DI SINI
-            // Menggunakan innerHTML di dalam container span agar aman
             elContainer.innerHTML = svgSpinner;
             elText.innerText = "Memeriksa...";
 
             setTimeout(() => {
-                // Berhasil diperiksa
                 elContainer.innerHTML = svgCheck;
                 document.getElementById(`text-task${taskId}`).innerText = "Selesai";
                 document.getElementById(`task${taskId}`).classList.add('completed');
@@ -262,7 +294,6 @@
                     unlockBtn.disabled = false;
                     unlockBtn.classList.add('active'); 
                     btnText.innerText = "Dapatkan Link Asli";
-                    // Ganti icon gembok jadi terbuka
                     document.getElementById('btnIcon').outerHTML = svgUnlock.replace('<svg', '<svg id="btnIcon"');
                 } else {
                     btnText.innerText = `Buka Link Target (${totalCompleted}/3)`;
