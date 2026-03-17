@@ -2,7 +2,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // ==========================================
+    // =========================================
     // 1. API BUAT LINK (DENGAN KUNCI RAHASIA)
     // ==========================================
     if (request.method === "POST" && url.pathname === "/api/create") {
