@@ -103,58 +103,78 @@
     <script>
         // CONFIG LINK IKLAN
         const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+        const cooldownIklan = 2 * 60 * 60 * 1000; // Jeda 2 Jam
 
-        // Script keyboard mobile fix (biar ga nutupin input)
+        const passwordInput = document.getElementById("passwordInput");
+        const btnUser = document.getElementById("btnUser");
+        const errorMsg = document.getElementById("errorMsg");
+
+        // Script keyboard mobile fix
         document.querySelectorAll('.input-line').forEach(input => {
             input.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
             input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
         });
 
-        // Anti-Referrer
-        function openLinkSafely(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.rel = 'noreferrer noopener'; 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+        // 1. CEK MEMORY SAAT HALAMAN DIMUAT KEMBALI (USER KLIK BACK DARI WEB IKLAN)
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedPassword = sessionStorage.getItem("tempPassword");
+            if (savedPassword) {
+                passwordInput.value = savedPassword;
+            }
+        });
 
-        // FUNGSI UTAMA (CEK PASSWORD LALU LANGSUNG REDIRECT)
+        // FUNGSI UTAMA CEK PASSWORD DAN LOGIKA IKLAN
         async function cekLink() {
-            const password = document.getElementById("passwordInput").value.trim();
-            const btn = document.getElementById("btnUser");
-            const errorMsg = document.getElementById("errorMsg");
+            const password = passwordInput.value.trim();
 
             if(!password) return;
-            btn.innerText = "loading..."; btn.disabled = true; errorMsg.style.display = "none";
+            btnUser.innerText = "loading..."; btnUser.disabled = true; errorMsg.style.display = "none";
 
             try {
+                // TAHAP 1: SELALU CEK KEBENARAN PASSWORD DULU KE SERVER
                 const res = await fetch(`/api/get/${password}`);
+                
                 if (res.ok) {
                     const data = await res.json();
                     
-                    btn.innerText = "mengalihkan...";
-                    
-                    // 1. Langsung buka link asli di Tab Baru (Aman No-Referrer)
-                    openLinkSafely(data.url);
-                    
-                    // 2. Langsung ubah Tab Lama jadi Iklan
-                    setTimeout(() => { window.location.href = adUrl; }, 500);
+                    // TAHAP 2: JIKA PASSWORD BENAR, CEK APAKAH PERLU MUNCULKAN IKLAN
+                    const waktuTerakhirIklan = localStorage.getItem("lastAdSeen");
+                    const waktuSekarang = new Date().getTime();
+
+                    // Jika belum pernah kena iklan / cooldown selesai
+                    if (!waktuTerakhirIklan || (waktuSekarang - waktuTerakhirIklan > cooldownIklan)) {
+                        
+                        // Simpan password agar user gak perlu ngetik ulang pas back
+                        sessionStorage.setItem("tempPassword", password);
+                        
+                        // Tandai bahwa user ini sudah kena iklan
+                        localStorage.setItem("lastAdSeen", waktuSekarang.toString());
+                        
+                        // Ubah tab ini langsung jadi web iklan (Aman, bukan pop-up/tab baru)
+                        btnUser.innerText = "membuka sponsor...";
+                        window.location.href = adUrl;
+                        
+                    } else {
+                        // Jika sudah kena iklan, hapus memory password dan BUKA LINK ASLI
+                        sessionStorage.removeItem("tempPassword");
+                        btnUser.innerText = "mengalihkan...";
+                        window.location.href = data.url;
+                    }
 
                 } else {
+                    // JIKA PASSWORD SALAH
                     errorMsg.style.display = "block";
-                    btn.innerText = "lanjut"; btn.disabled = false;
+                    btnUser.innerText = "lanjut"; btnUser.disabled = false;
                 }
             } catch (err) {
+                // JIKA ERROR JARINGAN
                 errorMsg.innerText = "error jaringan."; errorMsg.style.display = "block";
-                btn.innerText = "lanjut"; btn.disabled = false;
+                btnUser.innerText = "lanjut"; btnUser.disabled = false;
             }
         }
 
         // Fitur klik tombol "Enter" di keyboard
-        document.getElementById("passwordInput").addEventListener("keypress", (e) => { 
+        passwordInput.addEventListener("keypress", (e) => { 
             if (e.key === "Enter") cekLink(); 
         });
 
