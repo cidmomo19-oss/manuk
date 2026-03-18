@@ -115,8 +115,14 @@
             input.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
         });
 
-        // 1. CEK MEMORY SAAT HALAMAN DIMUAT KEMBALI (USER KLIK BACK DARI WEB IKLAN)
-        document.addEventListener("DOMContentLoaded", () => {
+        // FIX TOMBOL NGE-STUCK SAAT TEKAN 'BACK' BROWSER
+        // Event pageshow membaca jika user kembali dari tab sebelah
+        window.addEventListener("pageshow", (event) => {
+            // Aktifkan lagi tombolnya & balikin tulisannya
+            btnUser.disabled = false;
+            btnUser.innerText = "Lanjut";
+            
+            // Masukkan kembali password jika tersimpan di session
             const savedPassword = sessionStorage.getItem("tempPassword");
             if (savedPassword) {
                 passwordInput.value = savedPassword;
@@ -128,7 +134,9 @@
             const password = passwordInput.value.trim();
 
             if(!password) return;
-            btnUser.innerText = "loading..."; btnUser.disabled = true; errorMsg.style.display = "none";
+            btnUser.innerText = "loading..."; 
+            btnUser.disabled = true; 
+            errorMsg.style.display = "none";
 
             try {
                 // TAHAP 1: SELALU CEK KEBENARAN PASSWORD DULU KE SERVER
@@ -150,8 +158,8 @@
                         // Tandai bahwa user ini sudah kena iklan
                         localStorage.setItem("lastAdSeen", waktuSekarang.toString());
                         
-                        // Ubah tab ini langsung jadi web iklan (Aman, bukan pop-up/tab baru)
-                        btnUser.innerText = "membuka sponsor...";
+                        // Teks sudah diganti dari "membuka sponsor..." menjadi "mengalihkan..."
+                        btnUser.innerText = "mengalihkan...";
                         window.location.href = adUrl;
                         
                     } else {
