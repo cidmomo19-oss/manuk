@@ -125,11 +125,11 @@
                 <span id="container-status1"><svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
             </div>
 
-            <!-- TUGAS 2: LIKE VIDEO (BIRU) -->
-            <div id="task2" class="task-item locked" onclick="startTask(2, 'dynamic')">
+            <!-- TUGAS 2: LIKE VIDEO (BIRU) - SEKARANG CUMA 1 LINK -->
+            <div id="task2" class="task-item locked" onclick="startTask(2, 'https://youtu.be/WcGCmTCaA5I')">
                 <div class="task-left">
                     <div class="task-icon"><svg viewBox="0 0 24 24" fill="#007bff"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></div>
-                    <span class="task-text" id="text-task2">Like Video</span>
+                    <span class="task-text" id="text-task2">Like & Komen Video</span>
                 </div>
                 <span id="container-status2"><svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
             </div>
@@ -166,20 +166,7 @@
     </div>
 
     <script>
-        // --- KONFIGURASI ROTASI VIDEO (Sudah ditambah video baru dan tanpa '?si=...') ---
-        const videoRotasi = [
-            "https://youtu.be/WcGCmTCaA5I",
-            "https://youtu.be/UHOiZGmsbLs",
-            "https://youtu.be/falVf97gEeA",
-            "https://youtu.be/XrCTcBM480Y",
-            "https://youtu.be/R0rCpSS8GNc",
-            "https://youtu.be/brZT5GYNKSI",
-            "https://youtu.be/u9G5pJhpoJI",
-            "https://youtu.be/ioC1wHxvbFQ",
-            "https://youtu.be/0OCa4I2UkUo",
-            "https://youtu.be/lx4qtZ5Wq0w" // <-- VIDEO BARU SUDAH DITAMBAH
-        ];
-        
+        // --- KONFIGURASI ---
         let finalTargetUrl = '';
         const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         const ADMIN_URL_KEY = "panel-rahasia-gw"; // Pintu masuk admin
@@ -248,21 +235,7 @@
             if (activeTask !== 0) return; 
 
             activeTask = taskId;
-            let finalUrl = url;
-
-            if (taskId === 2) {
-                let savedIndex = localStorage.getItem('savedVideoIndex');
-                let currentIndex = 0; 
-                if (savedIndex !== null && !isNaN(parseInt(savedIndex))) {
-                    currentIndex = parseInt(savedIndex);
-                    if (currentIndex >= videoRotasi.length) currentIndex = 0; 
-                }
-                finalUrl = videoRotasi[currentIndex];
-                let nextIndex = (currentIndex + 1) % videoRotasi.length;
-                localStorage.setItem('savedVideoIndex', nextIndex);
-            }
-
-            openLinkSafely(finalUrl); 
+            openLinkSafely(url); 
             document.getElementById(`text-task${taskId}`).innerText = "Menunggu aksi...";
         }
 
