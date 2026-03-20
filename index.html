@@ -61,7 +61,12 @@
     </a>
 
     <script>
-        const adUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+        // DAFTAR IKLAN (Bisa ditambah kalau mau lebih dari 2)
+        const daftarIklan = [
+            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan 1
+            "https://omg10.com/4/10608604" // Iklan 2 (Baru)
+        ];
+
         const passwordInput = document.getElementById("passwordInput");
         const btnUser = document.getElementById("btnUser");
         const errorMsg = document.getElementById("errorMsg");
@@ -86,23 +91,25 @@
             errorMsg.style.display = "none";
 
             try {
+                // Cek keakuratan password dulu sebelum melempar ke iklan
                 const res = await fetch(`/api/get/${password}`);
                 
                 if (res.ok) {
                     const data = await res.json();
                     
-                    // CEK APAKAH INI KLIK KEDUA (SETELAH DARI IKLAN)
-                    const statusIklan = sessionStorage.getItem("sudahKlikIklan");
+                    // Ambil urutan klik dari sessionStorage (Default 0)
+                    let langkahIklan = parseInt(sessionStorage.getItem("langkahIklan") || "0");
 
-                    if (!statusIklan) {
-                        // --- KLIK PERTAMA: LEMPAR KE IKLAN ---
+                    if (langkahIklan < daftarIklan.length) {
+                        // --- MASIH DALAM TAHAP IKLAN ---
                         sessionStorage.setItem("tempPassword", password);
-                        sessionStorage.setItem("sudahKlikIklan", "true"); // Tandai sudah iklan
+                        sessionStorage.setItem("langkahIklan", (langkahIklan + 1).toString()); 
                         
-                        window.location.href = adUrl;
+                        // Lempar ke iklan sesuai urutan
+                        window.location.href = daftarIklan[langkahIklan];
                     } else {
-                        // --- KLIK KEDUA: KE LINK ASLI ---
-                        sessionStorage.removeItem("sudahKlikIklan"); // Reset status buat password berikutnya
+                        // --- KLIK KETIGA: IKLAN SUDAH HABIS, KE LINK ASLI ---
+                        sessionStorage.removeItem("langkahIklan"); // Reset status
                         sessionStorage.removeItem("tempPassword");
                         
                         window.location.href = data.url;
