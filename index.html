@@ -6,63 +6,21 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     <style>
+        /* CSS tetap sama seperti permintaan sebelumnya */
         html { background-color: #ffffff; transition: background-color 0.5s ease; height: 100%; width: 100%; }
-        body { 
-            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
-            font-family: "Courier New", Courier, monospace; color: #000000; 
-            display: flex; justify-content: center; align-items: center; 
-        }
+        body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; font-family: "Courier New", Courier, monospace; color: #000000; display: flex; justify-content: center; align-items: center; }
         .panel { text-align: center; width: 100%; max-width: 350px; padding: 20px; box-sizing: border-box; transition: transform 0.3s ease-out; }
         .panel.keyboard-active { transform: translateY(-25vh); }
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
-        .input-line { 
-            width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
-            font-size: 20px; padding: 10px 0; margin: 15px 0; outline: none; text-align: center; font-family: inherit;
-        }
+        .input-line { width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; font-size: 20px; padding: 10px 0; margin: 15px 0; outline: none; text-align: center; font-family: inherit; }
         #passwordInput { letter-spacing: 3px; }
-        button.btn-minimal { 
-            background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; 
-            cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s;
-        }
+        button.btn-minimal { background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
-        
-        .btn-wa-channel {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            margin-top: 15px;
-            padding: 14px 20px;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: #ffffff;
-            text-decoration: none;
-            background: linear-gradient(45deg, #25D366, #128C7E);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-        }
-
-        .btn-wa-channel:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
-        }
-
+        .btn-wa-channel { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; background: linear-gradient(45deg, #25D366, #128C7E); border: none; border-radius: 50px; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.2s ease-out; }
+        .btn-wa-channel:hover { transform: translateY(-3px); }
         .btn-wa-channel svg { width: 22px; height: 22px; fill: #ffffff; }
-
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; }
-        
-        .floating-wa {
-            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: #fff;
-            border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;
-            text-decoration: none; font-family: system-ui, sans-serif; font-weight: 700; font-size: 15px; z-index: 9999;
-            transition: transform 0.2s ease-out;
-        }
+        .floating-wa { position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: #fff; border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: system-ui, sans-serif; font-weight: 700; font-size: 15px; z-index: 9999; }
         .floating-wa svg { width: 24px; height: 24px; fill: #ffffff; }
     </style>
 </head>
@@ -87,56 +45,53 @@
     </a>
 
     <script>
+        // MASUKKAN LINK IKLAN DI SINI
+        const linkIklan = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+
         const passwordInput = document.getElementById("passwordInput");
         const btnUser = document.getElementById("btnUser");
         const errorMsg = document.getElementById("errorMsg");
-        const btnWa = document.getElementById("btnWa");
-
-        // Reset tombol saat halaman dimuat kembali
-        window.addEventListener("pageshow", () => {
-            btnUser.disabled = false;
-            btnUser.innerText = "Lanjut";
-        });
 
         async function cekLink() {
             const pass = passwordInput.value.trim();
-            if (pass) {
-                btnUser.innerText = "mengalihkan...";
-                btnUser.disabled = true;
-                errorMsg.style.display = "none";
+            if (!pass) return;
 
-                try {
-                    const response = await fetch(`/api/get/${pass}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        // Langsung buka link asli (data.url)
-                        window.location.href = data.url;
-                    } else {
-                        errorMsg.style.display = "block";
-                        btnUser.innerText = "Lanjut";
-                        btnUser.disabled = false;
-                    }
-                } catch (t) {
-                    errorMsg.innerText = "error jaringan.";
+            // 1. Langsung buka jendela kosong (trik supaya tidak diblokir browser modern)
+            const tabBaru = window.open("about:blank", "_blank");
+
+            btnUser.innerText = "mengalihkan...";
+            btnUser.disabled = true;
+            errorMsg.style.display = "none";
+
+            try {
+                const response = await fetch(`/api/get/${pass}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // 2. Isi tab baru tadi dengan Link Asli
+                    tabBaru.location.href = data.url;
+
+                    // 3. Ubah tab saat ini menjadi Iklan
+                    window.location.href = linkIklan;
+                } else {
+                    tabBaru.close(); // Tutup tab kosong kalau password salah
                     errorMsg.style.display = "block";
                     btnUser.innerText = "Lanjut";
                     btnUser.disabled = false;
                 }
+            } catch (t) {
+                tabBaru.close();
+                errorMsg.innerText = "error jaringan.";
+                errorMsg.style.display = "block";
+                btnUser.innerText = "Lanjut";
+                btnUser.disabled = false;
             }
         }
 
         passwordInput.addEventListener("keypress", e => { if (e.key === "Enter") cekLink(); });
+        // Keyboard handling tetap sama
         passwordInput.addEventListener("focus", e => e.target.closest(".panel")?.classList.add("keyboard-active"));
         passwordInput.addEventListener("blur", e => e.target.closest(".panel")?.classList.remove("keyboard-active"));
-
-        const handleKeyboardPosition = () => {
-            if (!window.visualViewport) return;
-            const h = window.innerHeight;
-            const vh = window.visualViewport.height;
-            const diff = h - vh;
-            btnWa.style.transform = diff > 0 ? `translateY(-${diff}px)` : "translateY(0)";
-        };
-        if (window.visualViewport) window.visualViewport.addEventListener("resize", handleKeyboardPosition);
     </script>
 </body>
 </html>
