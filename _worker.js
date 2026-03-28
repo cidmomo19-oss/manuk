@@ -3,10 +3,10 @@ export default {
     const url = new URL(request.url);
 
     // =========================================================
-    // KODE RAHASIA LU (GANTI SESUAI SELERA)
+    // KODE RAHASIA LU
     // =========================================================
-    const URL_ADMIN = "/masuk-bawok-99"; // <-- URL Pintu Masuk
-    const KUNCI_API = "bawok-rahasia-77"; // <-- Password API
+    const URL_ADMIN = "/masuk-bawok-99"; 
+    const KUNCI_API = "bawok-rahasia-77"; 
     // =========================================================
 
     // 1. MUNCULKAN HALAMAN ADMIN
@@ -58,7 +58,7 @@ export default {
       return new Response(adminHTML, { headers: { "Content-Type": "text/html" } });
     }
 
-    // 2. API BUAT / UPDATE LINK 
+    // 2. API BUAT / UPDATE LINK (Masih fungsi buat link selain CUY)
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
@@ -67,30 +67,43 @@ export default {
         const { url: targetUrl, password } = body;
         if (!targetUrl || !password) return new Response("Data Kurang", { status: 400 });
 
-        // Simpan langsung ke KV Database (Otomatis overwrite kalau udah ada)
         await env.LINK_DB.put(password, targetUrl);
         return new Response(JSON.stringify({ password, status: "success" }), { headers: { 'Content-Type': 'application/json' } });
       } catch (e) { return new Response("Error", { status: 500 }); }
     }
 
-    // 3. API GET LINK UNTUK USER (ANTI CACHE 100%)
+    // 3. API GET LINK UNTUK USER
     if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
       const pin = url.pathname.split("/").pop();
       
-      // Ambil data langsung dari Database KV
+      const headerAntiCache = {
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      // =========================================================
+      // 🔥 HARDCODE AREA (TANAM LANGSUNG DI SINI) 🔥
+      // =========================================================
+      if (pin === "CUY") {
+        return new Response(JSON.stringify({ 
+          url: "https://pokoco.co/v?id=5ukF172rO" 
+        }), { headers: headerAntiCache });
+      }
+      
+      // Kalau lu mau nambah hardcode lain, tinggal copy paste if nya:
+      // if (pin === "PASSWORD_LAIN") {
+      //   return new Response(JSON.stringify({ url: "LINK_LAIN" }), { headers: headerAntiCache });
+      // }
+      // =========================================================
+
+      // Kalau passwordnya BUKAN "CUY", dia tetep nyari ke Database KV lu (buat link2 lain)
       const target = await env.LINK_DB.get(pin);
       if (!target) return new Response(JSON.stringify({ error: 1 }), { status: 404 });
 
-      // HEADER KHUSUS: Paksa browser & server jgn pernah nge-cache ini
-      return new Response(JSON.stringify({ url: target }), {
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+      return new Response(JSON.stringify({ url: target }), { headers: headerAntiCache });
     }
 
     // 4. SELAIN DI ATAS, TAMPILKAN HALAMAN UTAMA (index.html)
