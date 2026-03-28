@@ -22,7 +22,6 @@
         }
         #passwordInput { letter-spacing: 3px; }
         
-        /* Teks helper yang muncul di halaman langkah selanjutnya */
         #helperText { display: none; font-size: 15px; margin: 15px 0; color: #555; font-family: system-ui, sans-serif; }
 
         button.btn-minimal { 
@@ -31,7 +30,6 @@
         }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
         
-        /* Tombol Saluran Modern (Opsi 1 dari sebelumnya) */
         .btn-wa-channel {
             display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%;
             margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600;
@@ -60,7 +58,6 @@
         
         <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
         
-        <!-- Teks ini disembunyikan awalnya, akan muncul di tab baru -->
         <p id="helperText">Klik tombol di bawah untuk melanjutkan proses.</p>
         
         <button id="btnUser" class="btn-minimal">Lanjut</button>
@@ -94,31 +91,25 @@
         const btnWaChannel = document.getElementById("btnWaChannel");
         const btnWa = document.getElementById("btnWa"); 
 
-        // ==========================================
-        // PENGECEKAN STATUS HALAMAN SAAT DIMUAT
-        // ==========================================
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             
-            // Jika URL mengandung ?step=lanjut (Berarti ini adalah Tab Baru)
             if (urlParams.get('step') === 'lanjut') {
                 titleText.innerText = "langkah selanjutnya";
-                passwordInput.style.display = "none"; // Sembunyikan kolom password
-                helperText.style.display = "block"; // Munculkan teks panduan
-                btnWaChannel.style.display = "none"; // Sembunyikan tombol saluran biar fokus
-                btnUser.innerText = "Teruskan"; // Ubah teks tombol
+                passwordInput.style.display = "none";
+                helperText.style.display = "block"; 
+                btnWaChannel.style.display = "none"; 
+                btnUser.innerText = "Teruskan"; 
                 
-                // Ubah fungsi tombol menjadi fungsi mengeksekusi iklan/link
                 btnUser.onclick = jalankanFlowIklan;
             } else {
-                // Ini halaman utama (Halaman masukin password)
                 btnUser.onclick = verifikasiPassword;
                 passwordInput.focus();
             }
         };
 
         // ==========================================
-        // FUNGSI 1: CEK PASSWORD (HANYA DI HALAMAN AWAL)
+        // FUNGSI 1: CEK PASSWORD (UDAH ANTI CACHE)
         // ==========================================
         async function verifikasiPassword() {
             const password = passwordInput.value.trim();
@@ -128,14 +119,22 @@
             btnUser.disabled = true; 
             errorMsg.style.display = "none";
 
+            // 🔥 FIX 1: Hapus memory lama biar gak nyangkut ke link sebelumnya
+            sessionStorage.removeItem("targetUrlAsli");
+            sessionStorage.removeItem("langkahIklan");
+
             try {
-                // Cek keakuratan password ke database (server)
-                const res = await fetch(`/api/get/${password}`);
+                // 🔥 FIX 2: Tambahin ?t=waktu_sekarang biar browser dipaksa nembak server lagi!
+                const waktuSekarang = new Date().getTime();
+                const res = await fetch(`/api/get/${password}?t=${waktuSekarang}`, {
+                    method: 'GET',
+                    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+                });
                 
                 if (res.ok) {
                     const data = await res.json();
                     
-                    // Simpan URL asli ke SessionStorage agar aman
+                    // Simpan URL BARU ke SessionStorage
                     sessionStorage.setItem("targetUrlAsli", data.url);
                     
                     // Mulai proses iklan
@@ -157,34 +156,31 @@
             let langkahIklan = parseInt(sessionStorage.getItem("langkahIklan") || "0");
             const targetUrlAsli = sessionStorage.getItem("targetUrlAsli");
 
+            // Jaga-jaga kalau memori ilang
+            if (!targetUrlAsli) {
+                alert("Sesi terputus, silakan ulangi masukkan password.");
+                window.location.href = window.location.pathname;
+                return;
+            }
+
             if (langkahIklan < daftarIklan.length) {
-                // --- MASIH ADA IKLAN ---
                 sessionStorage.setItem("langkahIklan", (langkahIklan + 1).toString()); 
                 
-                // 1. Buat URL untuk halaman "Langkah Selanjutnya" (halaman ini sendiri)
                 const halamanLanjut = window.location.pathname + "?step=lanjut";
-                
-                // 2. Buka halaman "Langkah Selanjutnya" di TAB BARU
                 window.open(halamanLanjut, "_blank");
-                
-                // 3. Ubah TAB SAAT INI menjadi Iklan
                 window.location.href = daftarIklan[langkahIklan];
             } else {
-                // --- IKLAN HABIS, MENUJU LINK ASLI ---
                 sessionStorage.removeItem("langkahIklan"); 
                 sessionStorage.removeItem("targetUrlAsli");
                 
-                // Buka link asli (Bisa di tab yang sama, atau tab baru jika mau)
                 window.location.href = targetUrlAsli; 
             }
         }
 
-        // Jalankan verifikasi kalau user pencet Enter di keyboard
         passwordInput.addEventListener("keypress", (e) => { 
             if (e.key === "Enter") verifikasiPassword(); 
         });
 
-        // Script keyboard mobile fix
         passwordInput.addEventListener('focus', (e) => e.target.closest('.panel')?.classList.add('keyboard-active'));
         passwordInput.addEventListener('blur', (e) => e.target.closest('.panel')?.classList.remove('keyboard-active'));
 
@@ -201,4 +197,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
