@@ -9,7 +9,7 @@ export default {
     const KUNCI_API = "bawok-rahasia-77"; // <-- Password API
     // =========================================================
 
-    // 1. MUNCULKAN HALAMAN ADMIN (Hanya jika URL cocok)
+    // 1. MUNCULKAN HALAMAN ADMIN
     if (request.method === "GET" && url.pathname === URL_ADMIN) {
       const adminHTML = `
       <!DOCTYPE html>
@@ -43,7 +43,7 @@ export default {
                   try {
                       const req = await fetch('/api/create', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({adminKey: key, url: url, password: pass}) });
                       if(req.ok) { 
-                          res.innerText = "Sukses Simpan/Update: " + pass; 
+                          res.innerText = "Sukses Simpan: " + pass; 
                           document.getElementById("url").value = ""; 
                           document.getElementById("pass").value = ""; 
                       }
@@ -58,7 +58,7 @@ export default {
       return new Response(adminHTML, { headers: { "Content-Type": "text/html" } });
     }
 
-    // 2. API BUAT / UPDATE LINK (Sekaligus bersihin cache kalau ada update)
+    // 2. API BUAT / UPDATE LINK 
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
@@ -67,47 +67,30 @@ export default {
         const { url: targetUrl, password } = body;
         if (!targetUrl || !password) return new Response("Data Kurang", { status: 400 });
 
-        // CACHE BUSTER: Hapus cache lama di server Cloudflare jika sedang melakukan UPDATE
-        const cache = caches.default;
-        const targetCacheUrl = new URL(`/api/get/${password}`, request.url).toString();
-        await cache.delete(new Request(targetCacheUrl)); 
-
-        // Simpan atau Timpa (Overwrite) link lama ke DB
+        // Simpan langsung ke KV Database (Otomatis overwrite kalau udah ada)
         await env.LINK_DB.put(password, targetUrl);
         return new Response(JSON.stringify({ password, status: "success" }), { headers: { 'Content-Type': 'application/json' } });
       } catch (e) { return new Response("Error", { status: 500 }); }
     }
 
-    // 3. API GET LINK UNTUK USER (Dengan Cache yang lebih masuk akal + Bypass opsi)
+    // 3. API GET LINK UNTUK USER (ANTI CACHE 100%)
     if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
       const pin = url.pathname.split("/").pop();
-      const isForceRefresh = url.searchParams.get("refresh") === "true"; // Opsi bypass cache
       
-      const cache = caches.default;
-      const cacheKey = new Request(url.toString(), request);
-      
-      let response = null;
-      
-      // Kalau nggak disuruh refresh paksa, coba cari di cache dulu
-      if (!isForceRefresh) {
-        response = await cache.match(cacheKey);
-      }
+      // Ambil data langsung dari Database KV
+      const target = await env.LINK_DB.get(pin);
+      if (!target) return new Response(JSON.stringify({ error: 1 }), { status: 404 });
 
-      if (!response) {
-        const target = await env.LINK_DB.get(pin);
-        if (!target) return new Response(JSON.stringify({ error: 1 }), { status: 404 });
-
-        // Gw ubah max-age jadi 3600 (1 Jam). 30 hari itu kelamaan buat sistem redirect.
-        response = new Response(JSON.stringify({ url: target }), {
-          headers: { 
-            'Content-Type': 'application/json', 
-            'Cache-Control': 'public, max-age=3600' // Cukup 1 jam aja
-          }
-        });
-        
-        ctx.waitUntil(cache.put(cacheKey, response.clone()));
-      }
-      return response;
+      // HEADER KHUSUS: Paksa browser & server jgn pernah nge-cache ini
+      return new Response(JSON.stringify({ url: target }), {
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
     }
 
     // 4. SELAIN DI ATAS, TAMPILKAN HALAMAN UTAMA (index.html)
