@@ -32,8 +32,8 @@ export default {
               <input type="password" id="key" placeholder="KUNCI API">
               <input type="url" id="url" placeholder="URL ASLI (Target)">
               <input type="text" id="pass" placeholder="PASSWORD CUSTOM">
-              <button onclick="save()" id="btn">GENERATE</button>
-              <p id="res" style="color:#2ecc71; font-size: 20px; margin-top: 20px;"></p>
+              <button onclick="save()" id="btn">GENERATE / UPDATE</button>
+              <p id="res" style="color:#2ecc71; font-size: 16px; margin-top: 20px;"></p>
           </div>
           <script>
               async function save() {
@@ -42,12 +42,15 @@ export default {
                   btn.innerText = "LOADING..."; btn.disabled = true; res.innerText = "";
                   try {
                       const req = await fetch('/api/create', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({adminKey: key, url: url, password: pass}) });
-                      if(req.ok) { res.innerText = "Sukses: " + pass; document.getElementById("url").value = ""; document.getElementById("pass").value = ""; }
+                      if(req.ok) { 
+                          res.innerText = "Sukses Simpan/Update: " + pass; 
+                          document.getElementById("url").value = ""; 
+                          document.getElementById("pass").value = ""; 
+                      }
                       else if(req.status === 401) alert("Kunci API Salah!");
-                      else if(req.status === 409) alert("Password sudah terpakai!");
-                      else alert("Gagal!");
+                      else alert("Gagal Simpan!");
                   } catch(e) { alert("Error!"); }
-                  btn.innerText = "GENERATE"; btn.disabled = false;
+                  btn.innerText = "GENERATE / UPDATE"; btn.disabled = false;
               }
           </script>
       </body></html>
@@ -55,7 +58,7 @@ export default {
       return new Response(adminHTML, { headers: { "Content-Type": "text/html" } });
     }
 
-    // 2. API BUAT LINK (Hanya terima data jika Kunci API benar)
+    // 2. API BUAT / UPDATE LINK (Sekaligus bersihin cache kalau ada update)
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
@@ -64,28 +67,44 @@ export default {
         const { url: targetUrl, password } = body;
         if (!targetUrl || !password) return new Response("Data Kurang", { status: 400 });
 
-        const ada = await env.LINK_DB.get(password);
-        if (ada !== null) return new Response("Duplikat", { status: 409 });
+        // CACHE BUSTER: Hapus cache lama di server Cloudflare jika sedang melakukan UPDATE
+        const cache = caches.default;
+        const targetCacheUrl = new URL(`/api/get/${password}`, request.url).toString();
+        await cache.delete(new Request(targetCacheUrl)); 
 
+        // Simpan atau Timpa (Overwrite) link lama ke DB
         await env.LINK_DB.put(password, targetUrl);
-        return new Response(JSON.stringify({ password }), { headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ password, status: "success" }), { headers: { 'Content-Type': 'application/json' } });
       } catch (e) { return new Response("Error", { status: 500 }); }
     }
 
-    // 3. API GET LINK UNTUK USER (Dengan Cache)
+    // 3. API GET LINK UNTUK USER (Dengan Cache yang lebih masuk akal + Bypass opsi)
     if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
       const pin = url.pathname.split("/").pop();
+      const isForceRefresh = url.searchParams.get("refresh") === "true"; // Opsi bypass cache
+      
       const cache = caches.default;
       const cacheKey = new Request(url.toString(), request);
-      let response = await cache.match(cacheKey);
+      
+      let response = null;
+      
+      // Kalau nggak disuruh refresh paksa, coba cari di cache dulu
+      if (!isForceRefresh) {
+        response = await cache.match(cacheKey);
+      }
 
       if (!response) {
         const target = await env.LINK_DB.get(pin);
         if (!target) return new Response(JSON.stringify({ error: 1 }), { status: 404 });
 
+        // Gw ubah max-age jadi 3600 (1 Jam). 30 hari itu kelamaan buat sistem redirect.
         response = new Response(JSON.stringify({ url: target }), {
-          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=2592000' }
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Cache-Control': 'public, max-age=3600' // Cukup 1 jam aja
+          }
         });
+        
         ctx.waitUntil(cache.put(cacheKey, response.clone()));
       }
       return response;
