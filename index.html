@@ -76,40 +76,20 @@
     </a>
 
     <script>
-        // DAFTAR IKLAN
-        const daftarIklan = [
-            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf",
-            "https://omg10.com/4/10608604"
-        ];
-
         // Elemen HTML
         const passwordInput = document.getElementById("passwordInput");
         const btnUser = document.getElementById("btnUser");
         const errorMsg = document.getElementById("errorMsg");
         const titleText = document.getElementById("titleText");
-        const helperText = document.getElementById("helperText");
-        const btnWaChannel = document.getElementById("btnWaChannel");
         const btnWa = document.getElementById("btnWa"); 
 
         window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            if (urlParams.get('step') === 'lanjut') {
-                titleText.innerText = "langkah selanjutnya";
-                passwordInput.style.display = "none";
-                helperText.style.display = "block"; 
-                btnWaChannel.style.display = "none"; 
-                btnUser.innerText = "Teruskan"; 
-                
-                btnUser.onclick = jalankanFlowIklan;
-            } else {
-                btnUser.onclick = verifikasiPassword;
-                passwordInput.focus();
-            }
+            btnUser.onclick = verifikasiPassword;
+            passwordInput.focus();
         };
 
         // ==========================================
-        // FUNGSI 1: CEK PASSWORD (UDAH ANTI CACHE)
+        // FUNGSI CEK PASSWORD LANGSUNG REDIRECT
         // ==========================================
         async function verifikasiPassword() {
             const password = passwordInput.value.trim();
@@ -119,12 +99,7 @@
             btnUser.disabled = true; 
             errorMsg.style.display = "none";
 
-            // 🔥 FIX 1: Hapus memory lama biar gak nyangkut ke link sebelumnya
-            sessionStorage.removeItem("targetUrlAsli");
-            sessionStorage.removeItem("langkahIklan");
-
             try {
-                // 🔥 FIX 2: Tambahin ?t=waktu_sekarang biar browser dipaksa nembak server lagi!
                 const waktuSekarang = new Date().getTime();
                 const res = await fetch(`/api/get/${password}?t=${waktuSekarang}`, {
                     method: 'GET',
@@ -134,11 +109,9 @@
                 if (res.ok) {
                     const data = await res.json();
                     
-                    // Simpan URL BARU ke SessionStorage
-                    sessionStorage.setItem("targetUrlAsli", data.url);
-                    
-                    // Mulai proses iklan
-                    jalankanFlowIklan();
+                    // LANGSUNG ARAHKAN KE LINK TUJUAN KETIKA PASSWORD BENAR (IKLAN DIHAPUS)
+                    window.location.href = data.url;
+
                 } else {
                     errorMsg.style.display = "block";
                     btnUser.innerText = "Lanjut"; btnUser.disabled = false;
@@ -146,34 +119,6 @@
             } catch (err) {
                 errorMsg.innerText = "error jaringan."; errorMsg.style.display = "block";
                 btnUser.innerText = "Lanjut"; btnUser.disabled = false;
-            }
-        }
-
-        // ==========================================
-        // FUNGSI 2: JALANKAN LOGIKA TAB-SWAP / IKLAN
-        // ==========================================
-        function jalankanFlowIklan() {
-            let langkahIklan = parseInt(sessionStorage.getItem("langkahIklan") || "0");
-            const targetUrlAsli = sessionStorage.getItem("targetUrlAsli");
-
-            // Jaga-jaga kalau memori ilang
-            if (!targetUrlAsli) {
-                alert("Sesi terputus, silakan ulangi masukkan password.");
-                window.location.href = window.location.pathname;
-                return;
-            }
-
-            if (langkahIklan < daftarIklan.length) {
-                sessionStorage.setItem("langkahIklan", (langkahIklan + 1).toString()); 
-                
-                const halamanLanjut = window.location.pathname + "?step=lanjut";
-                window.open(halamanLanjut, "_blank");
-                window.location.href = daftarIklan[langkahIklan];
-            } else {
-                sessionStorage.removeItem("langkahIklan"); 
-                sessionStorage.removeItem("targetUrlAsli");
-                
-                window.location.href = targetUrlAsli; 
             }
         }
 
