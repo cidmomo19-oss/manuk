@@ -228,39 +228,45 @@
     });
 
     // ==========================================
-    // 2. LOGIKA SUB4UNLOCK (ANTI BLOKIR CHROME)
+    // 2. LOGIKA SUB4UNLOCK (FIX DEEP LINK APP)
     // ==========================================
     const linkSubscribe = "https://www.youtube.com/@kingbawok";
-    const linkVideo = "https://youtu.be/f2vrGhKCyWE"; // Link Video Baru
+    const linkVideo = "https://youtu.be/f2vrGhKCyWE?si=3EjSbxel4WKOns5j"; 
 
     let statusSub = false;
     let statusLikeCom = false;
     
     let tugasAktif = null; 
-    let waktuKeluarTab = 0;
+    let waktuKlikTugas = 0; // Menggunakan waktu klik sebagai patokan pasti
     let timeoutBatal = null;
 
     // Mendeteksi saat user pindah layar / balik lagi
     document.addEventListener("visibilitychange", () => {
         if (!tugasAktif) return;
 
-        if (document.hidden) {
-            waktuKeluarTab = Date.now();
-        } else {
-            if (waktuKeluarTab > 0) {
-                clearTimeout(timeoutBatal);
-                const waktuDiLuar = Date.now() - waktuKeluarTab;
-                
-                setTimeout(() => {
-                    if (waktuDiLuar < 2000) {
-                        // Kembali kurang dari 2 detik (terlalu cepat / nyurangan)
-                        selesaikanTugas(false, "Coba Lagi");
-                    } else {
-                        // Sukses
-                        selesaikanTugas(true, "Selesai");
-                    }
-                }, 1500);
+        // Hanya proses saat layar KEMBALI TERLIHAT (kembali ke web kita)
+        if (!document.hidden) {
+            let durasi = Date.now() - waktuKlikTugas;
+
+            // 1. MENGABAIKAN KEDIPAN HP (Ghost Event saat buka Aplikasi YouTube)
+            // Jika kembali kurang dari 1 detik, anggap itu cuma sistem HP yang ngebug. Abaikan!
+            if (durasi < 1000) {
+                return; 
             }
+
+            // 2. USER BENAR-BENAR KEMBALI
+            clearTimeout(timeoutBatal);
+            
+            // Beri jeda 1 detik untuk animasi "Memeriksa..."
+            setTimeout(() => {
+                if (durasi < 2500) {
+                    // Jika total durasi sejak klik sampai balik kurang dari 2.5 detik = Terlalu Cepat
+                    selesaikanTugas(false, "Coba Lagi");
+                } else {
+                    // Sukses
+                    selesaikanTugas(true, "Selesai");
+                }
+            }, 1000);
         }
     });
 
@@ -270,7 +276,7 @@
         if (jenis === 'likecom' && statusLikeCom) return;
 
         tugasAktif = jenis;
-        waktuKeluarTab = 0;
+        waktuKlikTugas = Date.now(); // Catat waktu klik sekarang
 
         const isSub = jenis === 'sub';
         const targetUrl = isSub ? linkSubscribe : linkVideo;
@@ -285,7 +291,7 @@
         const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
 
         // ====================================================================
-        // TEKNIK ANTI BLOKIR POP-UP + ANONYMIZER (Lapis Kedua)
+        // TEKNIK ANTI BLOKIR POP-UP + ANONYMIZER
         // Membuat elemen "a" (link) bayangan agar Chrome menganggapnya klik alami
         // ====================================================================
         const a = document.createElement('a');
@@ -308,9 +314,10 @@
             otherBtn.classList.add('disabled');
         }
 
-        // Kalau ternyata layar tetep ga pindah selama 5 detik, gagal.
+        // Kalau ternyata user ngeklik tapi layarnya bener-bener ga pindah (misal pop-up mati)
         timeoutBatal = setTimeout(() => {
-            if (waktuKeluarTab === 0) { 
+            // Cek apakah dia sama sekali gak ninggalin halaman
+            if (Date.now() - waktuKlikTugas > 4500 && document.visibilityState === 'visible') {
                 selesaikanTugas(false, "Coba Lagi");
             }
         }, 5000); 
@@ -344,7 +351,6 @@
         }
 
         tugasAktif = null;
-        waktuKeluarTab = 0;
     }
 
     function cekSemuaTugas() {
@@ -357,10 +363,9 @@
 
     function bukaLinkAsli() {
         if (statusSub && statusLikeCom && targetUrlAsli) {
-            // Gunakan noopener dan noreferrer juga saat membuka link asli agar lebih privasi
             const a = document.createElement('a');
             a.href = targetUrlAsli;
-            a.target = '_self'; // Redirect langsung di tab yang sama sesuai permintaan awalku
+            a.target = '_self'; 
             a.rel = 'noreferrer noopener';
             document.body.appendChild(a);
             a.click();
