@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Meta referrer bawaan agar lebih aman -->
+    <!-- Meta referrer bawaan agar lebih aman (Lapis Pertama) -->
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
@@ -228,10 +228,10 @@
     });
 
     // ==========================================
-    // 2. LOGIKA SUB4UNLOCK & ANONYMIZER
+    // 2. LOGIKA SUB4UNLOCK (ANTI BLOKIR CHROME)
     // ==========================================
     const linkSubscribe = "https://www.youtube.com/@kingbawok";
-    const linkVideo = "https://youtu.be/f2vrGhKCyWE";
+    const linkVideo = "https://youtu.be/f2vrGhKCyWE"; // Link Video Baru
 
     let statusSub = false;
     let statusLikeCom = false;
@@ -240,6 +240,7 @@
     let waktuKeluarTab = 0;
     let timeoutBatal = null;
 
+    // Mendeteksi saat user pindah layar / balik lagi
     document.addEventListener("visibilitychange", () => {
         if (!tugasAktif) return;
 
@@ -252,10 +253,10 @@
                 
                 setTimeout(() => {
                     if (waktuDiLuar < 2000) {
-                        // Jika kembali kurang dari 2 detik (terlalu cepat)
+                        // Kembali kurang dari 2 detik (terlalu cepat / nyurangan)
                         selesaikanTugas(false, "Coba Lagi");
                     } else {
-                        // Jika sukses
+                        // Sukses
                         selesaikanTugas(true, "Selesai");
                     }
                 }, 1500);
@@ -283,39 +284,33 @@
         const icon = document.getElementById(iconId);
         const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
 
-        // ==================================================
-        // TEKNIK ANONYMIZER: MENGHAPUS JEJAK REFERRER
-        // ==================================================
-        const anonymTab = window.open('about:blank', '_blank', 'noopener,noreferrer');
-        
-        if (anonymTab) {
-            anonymTab.document.write(`
-                <html>
-                <head>
-                    <meta name="referrer" content="no-referrer">
-                    <meta http-equiv="refresh" content="0;url=${targetUrl}">
-                </head>
-                <body></body>
-                </html>
-            `);
-            anonymTab.document.close();
-        } else {
-            window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }
-        // ==================================================
+        // ====================================================================
+        // TEKNIK ANTI BLOKIR POP-UP + ANONYMIZER (Lapis Kedua)
+        // Membuat elemen "a" (link) bayangan agar Chrome menganggapnya klik alami
+        // ====================================================================
+        const a = document.createElement('a');
+        a.href = targetUrl;
+        a.target = '_blank';
+        a.rel = 'noreferrer noopener'; // Menyembunyikan referer dari YouTube
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a); // Hapus lagi setelah diklik
+        // ====================================================================
 
+        // Ubah UI menjadi Loading
         btn.className = 'btn-task checking';
         text.innerText = "Memeriksa...";
         icon.classList.add('icon-spin');
         icon.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>'; 
 
+        // Matikan sementara tombol sebelah
         if (!((isSub && statusLikeCom) || (!isSub && statusSub))) {
             otherBtn.classList.add('disabled');
         }
 
+        // Kalau ternyata layar tetep ga pindah selama 5 detik, gagal.
         timeoutBatal = setTimeout(() => {
             if (waktuKeluarTab === 0) { 
-                // Jika tab pop-up terblokir dan tidak sempat pindah layar
                 selesaikanTugas(false, "Coba Lagi");
             }
         }, 5000); 
@@ -340,7 +335,7 @@
             cekSemuaTugas();
         } else {
             btn.className = 'btn-task failed';
-            text.innerText = pesan; // Pesan sudah diubah menjadi "Coba Lagi"
+            text.innerText = pesan; 
             if (isSub) {
                 icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
             } else {
@@ -362,7 +357,13 @@
 
     function bukaLinkAsli() {
         if (statusSub && statusLikeCom && targetUrlAsli) {
-            window.location.href = targetUrlAsli;
+            // Gunakan noopener dan noreferrer juga saat membuka link asli agar lebih privasi
+            const a = document.createElement('a');
+            a.href = targetUrlAsli;
+            a.target = '_self'; // Redirect langsung di tab yang sama sesuai permintaan awalku
+            a.rel = 'noreferrer noopener';
+            document.body.appendChild(a);
+            a.click();
         }
     }
 </script>
