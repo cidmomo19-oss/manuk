@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Meta referrer bawaan agar lebih aman (Lapis Pertama) -->
+    <!-- Meta referrer bawaan agar lebih aman -->
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
@@ -11,26 +11,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* === GLOBAL STYLE (Transisi Tema) === */
+        /* === EFEK TRANSISI HALAMAN ASLI === */
+        html { transition: background-color 0.5s ease; height: 100%; width: 100%; }
+        html.theme-pw { background-color: #ffffff; }
+        html.theme-s4u { background-color: #f4f7f6; }
+
         body { 
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
             display: flex; justify-content: center; align-items: center; 
-            transition: background-color 0.5s ease;
         }
 
         /* Tema 1: Halaman Password (Original) */
-        body.theme-pw { background-color: #ffffff; font-family: "Courier New", Courier, monospace; color: #000000; }
+        body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
         
         /* Tema 2: Halaman Sub4Unlock (Modern) */
-        body.theme-s4u { background-color: #f4f7f6; font-family: 'Poppins', sans-serif; }
+        body.theme-s4u { font-family: 'Poppins', sans-serif; }
 
         /* Container Pages */
-        #page-password { display: block; width: 100%; max-width: 350px; padding: 20px; box-sizing: border-box; text-align: center; transition: transform 0.3s ease-out; }
+        #page-password { 
+            display: block; width: 100%; max-width: 350px; padding: 20px; 
+            box-sizing: border-box; text-align: center; 
+            transition: transform 0.3s ease-out; /* Animasi asli keyboard */
+        }
         #page-sub4unlock { display: none; width: 90%; max-width: 400px; }
         
+        /* Animasi form naik saat keyboard muncul (Asli) */
         #page-password.keyboard-active { transform: translateY(-25vh); }
 
-        /* === CSS HALAMAN PASSWORD (ASLI) === */
+        /* === CSS HALAMAN PASSWORD (ASLI 100%) === */
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
         .input-line { 
             width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
@@ -41,20 +49,27 @@
             cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s;
         }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
+        
+        /* Animasi WA Channel Asli dikembalikan */
         .btn-wa-channel {
             display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%;
             margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600;
             color: #ffffff; text-decoration: none; background: linear-gradient(45deg, #25D366, #128C7E);
             border: none; border-radius: 50px; cursor: pointer; box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.2s ease-out;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
         }
-        .btn-wa-channel:hover { transform: translateY(-3px); }
+        .btn-wa-channel:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15); }
         .btn-wa-channel svg { width: 22px; height: 22px; fill: #ffffff; }
+        
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
+        
+        /* Animasi WA Melayang Asli dikembalikan */
         .floating-wa {
             position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: #fff;
             border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;
             text-decoration: none; font-family: system-ui, sans-serif; font-weight: 700; font-size: 15px; z-index: 9999;
+            transition: transform 0.2s ease-out;
         }
         .floating-wa svg { width: 24px; height: 24px; fill: #ffffff; }
 
@@ -89,7 +104,7 @@
         .btn-unlock.active { background: #007bff; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4); animation: pulse 2s infinite; }
         .btn-unlock.active:hover { background: #0056b3; transform: translateY(-2px); }
         
-        /* Animasi */
+        /* Animasi Sub4Unlock */
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
         .icon-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -97,6 +112,10 @@
     </style>
 </head>
 <body class="theme-pw">
+<script>
+    // Set class HTML saat awal muat
+    document.documentElement.className = "theme-pw";
+</script>
 
 <!-- ============================================== -->
 <!-- HALAMAN 1: PASSWORD (ORIGINAL)                 -->
@@ -160,8 +179,6 @@
     const btnUser = document.getElementById("btnUser");
     const errorMsg = document.getElementById("errorMsg");
     const btnWa = document.getElementById("btnWa"); 
-    
-    // Elemen Wrapper Halaman
     const pagePassword = document.getElementById("page-password");
     const pageSub4Unlock = document.getElementById("page-sub4unlock");
 
@@ -219,13 +236,37 @@
     function tampilkanSub4Unlock() {
         pagePassword.style.display = "none";
         btnWa.style.display = "none"; 
+        
+        // Ganti tema secara utuh (background transition)
+        document.documentElement.className = "theme-s4u";
         document.body.className = "theme-s4u";
+        
         pageSub4Unlock.style.display = "block";
     }
 
+    // ==========================================
+    // ANIMASI KEYBOARD ASLI (DIKEMBALIKAN)
+    // ==========================================
     passwordInput.addEventListener("keypress", (e) => { 
         if (e.key === "Enter") verifikasiPassword(); 
     });
+
+    passwordInput.addEventListener('focus', () => pagePassword.classList.add('keyboard-active'));
+    passwordInput.addEventListener('blur', () => pagePassword.classList.remove('keyboard-active'));
+
+    const handleKeyboardPosition = () => {
+        if (!window.visualViewport) return;
+        const windowHeight = window.innerHeight;
+        const viewportHeight = window.visualViewport.height;
+        const keyboardHeight = windowHeight - viewportHeight;
+        // Animasi menaikkan tombol WA jika keyboard muncul
+        btnWa.style.transform = (keyboardHeight > 0) ? `translateY(-${keyboardHeight}px)` : 'translateY(0)';
+    };
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleKeyboardPosition);
+    }
+
 
     // ==========================================
     // 2. LOGIKA SUB4UNLOCK (FIX DEEP LINK APP)
@@ -237,33 +278,27 @@
     let statusLikeCom = false;
     
     let tugasAktif = null; 
-    let waktuKlikTugas = 0; // Menggunakan waktu klik sebagai patokan pasti
+    let waktuKlikTugas = 0; 
     let timeoutBatal = null;
 
-    // Mendeteksi saat user pindah layar / balik lagi
     document.addEventListener("visibilitychange", () => {
         if (!tugasAktif) return;
 
-        // Hanya proses saat layar KEMBALI TERLIHAT (kembali ke web kita)
         if (!document.hidden) {
             let durasi = Date.now() - waktuKlikTugas;
 
-            // 1. MENGABAIKAN KEDIPAN HP (Ghost Event saat buka Aplikasi YouTube)
-            // Jika kembali kurang dari 1 detik, anggap itu cuma sistem HP yang ngebug. Abaikan!
+            // MENGABAIKAN KEDIPAN HP SAAT BUKA APLIKASI (< 1 DETIK)
             if (durasi < 1000) {
                 return; 
             }
 
-            // 2. USER BENAR-BENAR KEMBALI
             clearTimeout(timeoutBatal);
             
-            // Beri jeda 1 detik untuk animasi "Memeriksa..."
+            // Animasi delay "Memeriksa..."
             setTimeout(() => {
                 if (durasi < 2500) {
-                    // Jika total durasi sejak klik sampai balik kurang dari 2.5 detik = Terlalu Cepat
                     selesaikanTugas(false, "Coba Lagi");
                 } else {
-                    // Sukses
                     selesaikanTugas(true, "Selesai");
                 }
             }, 1000);
@@ -276,7 +311,7 @@
         if (jenis === 'likecom' && statusLikeCom) return;
 
         tugasAktif = jenis;
-        waktuKlikTugas = Date.now(); // Catat waktu klik sekarang
+        waktuKlikTugas = Date.now(); 
 
         const isSub = jenis === 'sub';
         const targetUrl = isSub ? linkSubscribe : linkVideo;
@@ -290,33 +325,27 @@
         const icon = document.getElementById(iconId);
         const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
 
-        // ====================================================================
-        // TEKNIK ANTI BLOKIR POP-UP + ANONYMIZER
-        // Membuat elemen "a" (link) bayangan agar Chrome menganggapnya klik alami
-        // ====================================================================
+        // Buka link aman tanpa blokir
         const a = document.createElement('a');
         a.href = targetUrl;
         a.target = '_blank';
-        a.rel = 'noreferrer noopener'; // Menyembunyikan referer dari YouTube
+        a.rel = 'noreferrer noopener'; 
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a); // Hapus lagi setelah diklik
-        // ====================================================================
+        document.body.removeChild(a); 
 
-        // Ubah UI menjadi Loading
+        // UI Loading
         btn.className = 'btn-task checking';
         text.innerText = "Memeriksa...";
         icon.classList.add('icon-spin');
         icon.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>'; 
 
-        // Matikan sementara tombol sebelah
         if (!((isSub && statusLikeCom) || (!isSub && statusSub))) {
             otherBtn.classList.add('disabled');
         }
 
-        // Kalau ternyata user ngeklik tapi layarnya bener-bener ga pindah (misal pop-up mati)
+        // Kalau popup/app ga kebuka sama sekali dalam 5 detik
         timeoutBatal = setTimeout(() => {
-            // Cek apakah dia sama sekali gak ninggalin halaman
             if (Date.now() - waktuKlikTugas > 4500 && document.visibilityState === 'visible') {
                 selesaikanTugas(false, "Coba Lagi");
             }
