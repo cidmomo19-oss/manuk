@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Meta referrer bawaan agar lebih aman -->
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
@@ -74,9 +75,13 @@
         }
         .btn-task:hover { background: #cc0000; transform: translateY(-2px); }
         .btn-task svg { width: 24px; height: 24px; fill: white; }
+        
+        /* Status Tombol Misi */
         .btn-task.checking { background: #f39c12; cursor: wait; pointer-events: none; }
         .btn-task.done { background: #28a745; pointer-events: none; }
-        
+        .btn-task.failed { background: #d32f2f; animation: shake 0.4s ease-in-out; }
+        .btn-task.disabled { opacity: 0.5; pointer-events: none; background: #999999; }
+
         .btn-unlock {
             background: #cccccc; color: white; width: 100%; padding: 16px; border: none; border-radius: 10px;
             font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.3s; font-family: inherit;
@@ -84,12 +89,14 @@
         .btn-unlock.active { background: #007bff; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4); animation: pulse 2s infinite; }
         .btn-unlock.active:hover { background: #0056b3; transform: translateY(-2px); }
         
+        /* Animasi */
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
         .icon-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
-<body class="theme-pw"> <!-- Tema awal: Password -->
+<body class="theme-pw">
 
 <!-- ============================================== -->
 <!-- HALAMAN 1: PASSWORD (ORIGINAL)                 -->
@@ -193,11 +200,8 @@
             
             if (res.ok) {
                 const data = await res.json();
-                targetUrlAsli = data.url; // Simpan link dari server
-                
-                // MENGUBAH TAMPILAN KE HALAMAN SUB4UNLOCK
+                targetUrlAsli = data.url; 
                 tampilkanSub4Unlock();
-
             } else {
                 errorMsg.innerText = "password tidak valid.";
                 errorMsg.style.display = "block";
@@ -212,68 +216,140 @@
         }
     }
 
-    // Fungsi Transisi Tema Halaman
     function tampilkanSub4Unlock() {
-        // Sembunyikan elemen password
         pagePassword.style.display = "none";
-        btnWa.style.display = "none"; // Hilangkan tombol WA mengambang
-
-        // Ubah Tema Body
+        btnWa.style.display = "none"; 
         document.body.className = "theme-s4u";
-
-        // Tampilkan elemen Sub4Unlock
         pageSub4Unlock.style.display = "block";
     }
 
-    // Eksekusi jika tekan Enter di Keyboard Halaman Password
     passwordInput.addEventListener("keypress", (e) => { 
         if (e.key === "Enter") verifikasiPassword(); 
     });
-    passwordInput.addEventListener('focus', (e) => pagePassword.classList.add('keyboard-active'));
-    passwordInput.addEventListener('blur', (e) => pagePassword.classList.remove('keyboard-active'));
 
     // ==========================================
-    // 2. LOGIKA SUB4UNLOCK
+    // 2. LOGIKA SUB4UNLOCK & ANONYMIZER
     // ==========================================
     const linkSubscribe = "https://www.youtube.com/@kingbawok";
     const linkVideo = "https://youtu.be/m_CDywoyG0Y";
 
     let statusSub = false;
     let statusLikeCom = false;
+    
+    let tugasAktif = null; 
+    let waktuKeluarTab = 0;
+    let timeoutBatal = null;
+
+    document.addEventListener("visibilitychange", () => {
+        if (!tugasAktif) return;
+
+        if (document.hidden) {
+            waktuKeluarTab = Date.now();
+        } else {
+            if (waktuKeluarTab > 0) {
+                clearTimeout(timeoutBatal);
+                const waktuDiLuar = Date.now() - waktuKeluarTab;
+                
+                setTimeout(() => {
+                    if (waktuDiLuar < 2000) {
+                        // Jika kembali kurang dari 2 detik (terlalu cepat)
+                        selesaikanTugas(false, "Coba Lagi");
+                    } else {
+                        // Jika sukses
+                        selesaikanTugas(true, "Selesai");
+                    }
+                }, 1500);
+            }
+        }
+    });
 
     function jalankanTugas(jenis) {
+        if (tugasAktif) return;
+        if (jenis === 'sub' && statusSub) return;
+        if (jenis === 'likecom' && statusLikeCom) return;
+
+        tugasAktif = jenis;
+        waktuKeluarTab = 0;
+
         const isSub = jenis === 'sub';
+        const targetUrl = isSub ? linkSubscribe : linkVideo;
+
         const btnId = isSub ? 'btnSub' : 'btnLikeCom';
         const textId = isSub ? 'textSub' : 'textLikeCom';
         const iconId = isSub ? 'iconSub' : 'iconLikeCom';
-        const targetUrl = isSub ? linkSubscribe : linkVideo;
-
+        
         const btn = document.getElementById(btnId);
         const text = document.getElementById(textId);
         const icon = document.getElementById(iconId);
+        const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
 
-        // Buka Tab YouTube
-        window.open(targetUrl, '_blank');
+        // ==================================================
+        // TEKNIK ANONYMIZER: MENGHAPUS JEJAK REFERRER
+        // ==================================================
+        const anonymTab = window.open('about:blank', '_blank', 'noopener,noreferrer');
+        
+        if (anonymTab) {
+            anonymTab.document.write(`
+                <html>
+                <head>
+                    <meta name="referrer" content="no-referrer">
+                    <meta http-equiv="refresh" content="0;url=${targetUrl}">
+                </head>
+                <body></body>
+                </html>
+            `);
+            anonymTab.document.close();
+        } else {
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        }
+        // ==================================================
 
-        // Ubah jadi "Memeriksa..."
-        btn.classList.add('checking');
+        btn.className = 'btn-task checking';
         text.innerText = "Memeriksa...";
         icon.classList.add('icon-spin');
         icon.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>'; 
 
-        // Simulasi delay cek 8 Detik
-        setTimeout(() => {
-            btn.classList.remove('checking');
-            btn.classList.add('done');
-            icon.classList.remove('icon-spin');
-            
-            text.innerText = "Selesai";
+        if (!((isSub && statusLikeCom) || (!isSub && statusSub))) {
+            otherBtn.classList.add('disabled');
+        }
+
+        timeoutBatal = setTimeout(() => {
+            if (waktuKeluarTab === 0) { 
+                // Jika tab pop-up terblokir dan tidak sempat pindah layar
+                selesaikanTugas(false, "Coba Lagi");
+            }
+        }, 5000); 
+    }
+
+    function selesaikanTugas(sukses, pesan) {
+        const isSub = tugasAktif === 'sub';
+        const btn = document.getElementById(isSub ? 'btnSub' : 'btnLikeCom');
+        const text = document.getElementById(isSub ? 'textSub' : 'textLikeCom');
+        const icon = document.getElementById(isSub ? 'iconSub' : 'iconLikeCom');
+        const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
+
+        otherBtn.classList.remove('disabled'); 
+        icon.classList.remove('icon-spin');
+
+        if (sukses) {
+            btn.className = 'btn-task done';
+            text.innerText = pesan;
             icon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
 
             if (isSub) statusSub = true; else statusLikeCom = true;
-
             cekSemuaTugas();
-        }, 8000); // 8000 = 8 Detik
+        } else {
+            btn.className = 'btn-task failed';
+            text.innerText = pesan; // Pesan sudah diubah menjadi "Coba Lagi"
+            if (isSub) {
+                icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+            } else {
+                icon.innerHTML = '<path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>';
+            }
+        }
+
+        tugasAktif = null;
+        waktuKeluarTab = 0;
     }
 
     function cekSemuaTugas() {
