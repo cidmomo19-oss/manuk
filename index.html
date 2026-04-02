@@ -259,7 +259,6 @@
         const windowHeight = window.innerHeight;
         const viewportHeight = window.visualViewport.height;
         const keyboardHeight = windowHeight - viewportHeight;
-        // Animasi menaikkan tombol WA jika keyboard muncul
         btnWa.style.transform = (keyboardHeight > 0) ? `translateY(-${keyboardHeight}px)` : 'translateY(0)';
     };
 
@@ -269,7 +268,7 @@
 
 
     // ==========================================
-    // 2. LOGIKA SUB4UNLOCK (FIX DEEP LINK APP)
+    // 2. LOGIKA SUB4UNLOCK (USER-FRIENDLY & ANTI LEMOT)
     // ==========================================
     const linkSubscribe = "https://www.youtube.com/@kingbawok";
     const linkVideo = "https://youtu.be/f2vrGhKCyWE?si=3EjSbxel4WKOns5j"; 
@@ -279,29 +278,33 @@
     
     let tugasAktif = null; 
     let waktuKlikTugas = 0; 
+    let userSudahPindahLayar = false;
     let timeoutBatal = null;
 
+    // Deteksi aktivitas pindah tab / buka aplikasi
     document.addEventListener("visibilitychange", () => {
         if (!tugasAktif) return;
 
-        if (!document.hidden) {
-            let durasi = Date.now() - waktuKlikTugas;
+        if (document.hidden) {
+            // Begitu layar web ini tertutup (berarti YouTube kebuka), catat!
+            userSudahPindahLayar = true;
+        } else {
+            // User KEMBALI ke halaman web kita
+            if (userSudahPindahLayar) {
+                let durasi = Date.now() - waktuKlikTugas;
 
-            // MENGABAIKAN KEDIPAN HP SAAT BUKA APLIKASI (< 1 DETIK)
-            if (durasi < 1000) {
-                return; 
-            }
+                // Abaikan jika ini cuma kedipan layar HP saat loading aplikasi (< 800ms)
+                if (durasi < 800) return;
 
-            clearTimeout(timeoutBatal);
-            
-            // Animasi delay "Memeriksa..."
-            setTimeout(() => {
-                if (durasi < 2500) {
-                    selesaikanTugas(false, "Coba Lagi");
-                } else {
+                // Kalau dia udah beneran pindah layar dan balik lagi, LANGSUNG SUKSES.
+                // Gak peduli HP dia butuh 2 detik, 5 detik, atau 1 jam.
+                clearTimeout(timeoutBatal);
+                
+                // Kasih animasi "Memeriksa..." selama 1.5 detik biar elegan, lalu Selesai.
+                setTimeout(() => {
                     selesaikanTugas(true, "Selesai");
-                }
-            }, 1000);
+                }, 1500);
+            }
         }
     });
 
@@ -312,6 +315,7 @@
 
         tugasAktif = jenis;
         waktuKlikTugas = Date.now(); 
+        userSudahPindahLayar = false;
 
         const isSub = jenis === 'sub';
         const targetUrl = isSub ? linkSubscribe : linkVideo;
@@ -325,7 +329,7 @@
         const icon = document.getElementById(iconId);
         const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
 
-        // Buka link aman tanpa blokir
+        // Membuka link YouTube dengan aman
         const a = document.createElement('a');
         a.href = targetUrl;
         a.target = '_blank';
@@ -334,22 +338,24 @@
         a.click();
         document.body.removeChild(a); 
 
-        // UI Loading
+        // Ubah UI jadi Loading "Memeriksa..."
         btn.className = 'btn-task checking';
         text.innerText = "Memeriksa...";
         icon.classList.add('icon-spin');
         icon.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>'; 
 
+        // Kunci tombol sebelahnya sementara
         if (!((isSub && statusLikeCom) || (!isSub && statusSub))) {
             otherBtn.classList.add('disabled');
         }
 
-        // Kalau popup/app ga kebuka sama sekali dalam 5 detik
+        // SATU-SATUNYA PENYEBAB GAGAL:
+        // Kalau tombol diklik, tapi selama 4 detik layar ga pindah-pindah (misal Pop-up diblokir browser)
         timeoutBatal = setTimeout(() => {
-            if (Date.now() - waktuKlikTugas > 4500 && document.visibilityState === 'visible') {
+            if (!userSudahPindahLayar) {
                 selesaikanTugas(false, "Coba Lagi");
             }
-        }, 5000); 
+        }, 4000); 
     }
 
     function selesaikanTugas(sukses, pesan) {
