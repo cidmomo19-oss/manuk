@@ -22,8 +22,6 @@
         }
         #passwordInput { letter-spacing: 3px; }
         
-        #helperText { display: none; font-size: 15px; margin: 15px 0; color: #555; font-family: system-ui, sans-serif; }
-
         button.btn-minimal { 
             background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; 
             cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s;
@@ -58,8 +56,6 @@
     
     <input type="text" id="passwordInput" class="input-line" autocomplete="off" autofocus>
     
-    <p id="helperText">Klik tombol di bawah untuk melanjutkan proses.</p>
-    
     <button id="btnUser" class="btn-minimal">Lanjut</button>
 
     <a href="https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V" target="_blank" class="btn-wa-channel" id="btnWaChannel">
@@ -77,40 +73,19 @@
 </a>
 
 <script>
-    // DAFTAR IKLAN
-    const daftarIklan = [
-        "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf",
-        "https://omg10.com/4/10608604"
-    ];
-
     // Elemen HTML
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
     const errorMsg = document.getElementById("errorMsg");
-    const titleText = document.getElementById("titleText");
-    const helperText = document.getElementById("helperText");
-    const btnWaChannel = document.getElementById("btnWaChannel");
     const btnWa = document.getElementById("btnWa"); 
 
     window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.get('step') === 'lanjut') {
-            titleText.innerText = "langkah selanjutnya";
-            passwordInput.style.display = "none";
-            helperText.style.display = "block"; 
-            btnWaChannel.style.display = "none"; 
-            btnUser.innerText = "Teruskan"; 
-            
-            btnUser.onclick = jalankanFlowIklan;
-        } else {
-            btnUser.onclick = verifikasiPassword;
-            passwordInput.focus();
-        }
+        btnUser.onclick = verifikasiPassword;
+        passwordInput.focus();
     };
 
     // ==========================================
-    // FUNGSI 1: CEK PASSWORD 
+    // FUNGSI: CEK PASSWORD & LANGSUNG REDIRECT
     // ==========================================
     async function verifikasiPassword() {
         const password = passwordInput.value.trim();
@@ -122,21 +97,16 @@
         // MENCEGAH PENGGUNA MEMASUKKAN PASSWORD CONTOH
         const cekPassword = password.toUpperCase();
         if (cekPassword === "ABC" || cekPassword === "ABCD" || cekPassword === "BALON") {
-            // Ubah teks peringatan khusus
             errorMsg.innerText = "⚠️ Password itu hanyalah contoh, password asli ada di dalam video.";
             errorMsg.style.display = "block";
             
             passwordInput.value = ""; // Kosongkan inputan
             passwordInput.focus(); // Arahkan kursor lagi ke form
-            return; // Hentikan di sini, jangan hubungi server
+            return; 
         }
 
         btnUser.innerText = "memeriksa..."; 
         btnUser.disabled = true; 
-
-        // Hapus memori cache URL lama
-        sessionStorage.removeItem("targetUrlAsli");
-        sessionStorage.removeItem("langkahIklan");
 
         try {
             const waktuSekarang = new Date().getTime();
@@ -147,44 +117,22 @@
             
             if (res.ok) {
                 const data = await res.json();
-                sessionStorage.setItem("targetUrlAsli", data.url);
-                jalankanFlowIklan();
+                
+                // LANGSUNG ARAHKAN KE URL ASLI TANPA IKLAN
+                window.location.href = data.url; 
+                
             } else {
                 // Teks kalau password SALAH / GAK ADA DI SERVER
                 errorMsg.innerText = "password tidak valid.";
                 errorMsg.style.display = "block";
-                btnUser.innerText = "Lanjut"; btnUser.disabled = false;
+                btnUser.innerText = "Lanjut"; 
+                btnUser.disabled = false;
             }
         } catch (err) {
             errorMsg.innerText = "error jaringan."; 
             errorMsg.style.display = "block";
-            btnUser.innerText = "Lanjut"; btnUser.disabled = false;
-        }
-    }
-
-    // ==========================================
-    // FUNGSI 2: JALANKAN LOGIKA IKLAN
-    // ==========================================
-    function jalankanFlowIklan() {
-        let langkahIklan = parseInt(sessionStorage.getItem("langkahIklan") || "0");
-        const targetUrlAsli = sessionStorage.getItem("targetUrlAsli");
-
-        if (!targetUrlAsli) {
-            window.location.href = window.location.pathname;
-            return;
-        }
-
-        if (langkahIklan < daftarIklan.length) {
-            sessionStorage.setItem("langkahIklan", (langkahIklan + 1).toString()); 
-            
-            const halamanLanjut = window.location.pathname + "?step=lanjut";
-            window.open(halamanLanjut, "_blank");
-            window.location.href = daftarIklan[langkahIklan];
-        } else {
-            sessionStorage.removeItem("langkahIklan"); 
-            sessionStorage.removeItem("targetUrlAsli");
-            
-            window.location.href = targetUrlAsli; 
+            btnUser.innerText = "Lanjut"; 
+            btnUser.disabled = false;
         }
     }
 
