@@ -7,23 +7,38 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
+    <!-- Font Poppins untuk halaman Sub4Unlock -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        /* === EFEK TRANSISI HALAMAN ASLI === */
+        html { transition: background-color 0.5s ease; height: 100%; width: 100%; }
+        html.theme-pw { background-color: #ffffff; }
+        html.theme-s4u { background-color: #f4f7f6; }
+
         body { 
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
             display: flex; justify-content: center; align-items: center; 
-            background-color: #ffffff;
-            font-family: "Courier New", Courier, monospace; color: #000000;
         }
 
+        /* Tema 1: Halaman Password (Original) */
+        body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
+        
+        /* Tema 2: Halaman Sub4Unlock (Modern) */
+        body.theme-s4u { font-family: 'Poppins', sans-serif; }
+
+        /* Container Pages */
         #page-password { 
             display: block; width: 100%; max-width: 350px; padding: 20px; 
             box-sizing: border-box; text-align: center; 
-            transition: transform 0.3s ease-out;
+            transition: transform 0.3s ease-out; /* Animasi asli keyboard */
         }
+        #page-sub4unlock { display: none; width: 90%; max-width: 400px; }
         
-        /* Animasi form naik saat keyboard muncul */
+        /* Animasi form naik saat keyboard muncul (Asli) */
         #page-password.keyboard-active { transform: translateY(-25vh); }
 
+        /* === CSS HALAMAN PASSWORD (ASLI 100%) === */
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; }
         .input-line { 
             width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
@@ -35,6 +50,7 @@
         }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
         
+        /* Animasi WA Channel Asli dikembalikan */
         .btn-wa-channel {
             display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%;
             margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600;
@@ -48,6 +64,7 @@
         
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
         
+        /* Animasi WA Melayang Asli dikembalikan */
         .floating-wa {
             position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: #fff;
             border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;
@@ -55,10 +72,54 @@
             transition: transform 0.2s ease-out;
         }
         .floating-wa svg { width: 24px; height: 24px; fill: #ffffff; }
+
+        /* === CSS HALAMAN SUB4UNLOCK (MODERN) === */
+        .s4u-card {
+            background: #ffffff; padding: 30px 20px; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center;
+        }
+        .s4u-header-icon svg { width: 60px; height: 60px; fill: #ff0000; margin-bottom: 10px; }
+        .s4u-card h2 { margin: 0 0 10px 0; color: #333; font-size: 22px; }
+        .s4u-card p.subtitle { color: #777; font-size: 14px; margin-bottom: 25px; }
+        .task-list { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+        
+        .btn-task {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #ff0000; color: white; padding: 14px 20px; border-radius: 10px;
+            font-weight: 600; font-size: 15px; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%; font-family: inherit;
+        }
+        .btn-task:hover { background: #cc0000; transform: translateY(-2px); }
+        .btn-task svg { width: 24px; height: 24px; fill: white; }
+        
+        /* Status Tombol Misi */
+        .btn-task.checking { background: #f39c12; cursor: wait; pointer-events: none; }
+        .btn-task.done { background: #28a745; pointer-events: none; }
+        .btn-task.failed { background: #d32f2f; animation: shake 0.4s ease-in-out; }
+        .btn-task.disabled { opacity: 0.5; pointer-events: none; background: #999999; }
+
+        .btn-unlock {
+            background: #cccccc; color: white; width: 100%; padding: 16px; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.3s; font-family: inherit;
+        }
+        .btn-unlock.active { background: #007bff; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4); animation: pulse 2s infinite; }
+        .btn-unlock.active:hover { background: #0056b3; transform: translateY(-2px); }
+        
+        /* Animasi Sub4Unlock */
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); } }
+        .icon-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
-<body>
+<body class="theme-pw">
+<script>
+    // Set class HTML saat awal muat
+    document.documentElement.className = "theme-pw";
+</script>
 
+<!-- ============================================== -->
+<!-- HALAMAN 1: PASSWORD (ORIGINAL)                 -->
+<!-- ============================================== -->
 <div id="page-password">
     <h2 class="minimal-title">masukkan password</h2>
     
@@ -78,18 +139,57 @@
     <span>Chat Admin Jika Mengalami Masalah</span>
 </a>
 
+<!-- ============================================== -->
+<!-- HALAMAN 2: SUB4UNLOCK (MODERN)                 -->
+<!-- ============================================== -->
+<div id="page-sub4unlock" class="s4u-card">
+    <div class="s4u-header-icon">
+        <svg viewBox="0 0 24 24"><path d="M21.582,6.186c-0.23-0.86-0.908-1.538-1.768-1.768C18.254,4,12,4,12,4S5.746,4,4.186,4.418 c-0.86,0.23-1.538,0.908-1.768,1.768C2,7.746,2,12,2,12s0,4.254,0.418,5.814c0.23,0.86,0.908,1.538,1.768,1.768 C5.746,20,12,20,12,20s6.254,0,7.814-0.418c0.861-0.23,1.538-0.908,1.768-1.768C22,16.254,22,12,22,12S22,7.746,21.582,6.186z M10,15.464V8.536L16,12L10,15.464z"/></svg>
+    </div>
+    <h2>Selesaikan Misi</h2>
+    <p class="subtitle">Bantu kreator dengan menyelesaikan langkah di bawah untuk membuka link.</p>
+
+    <div class="task-list">
+        <!-- Tugas 1: Subscribe -->
+        <button class="btn-task" id="btnSub" onclick="jalankanTugas('sub')">
+            <span id="textSub">1. Subscribe Channel</span>
+            <svg id="iconSub" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </button>
+
+        <!-- Tugas 2: Like & Comment -->
+        <button class="btn-task" id="btnLikeCom" onclick="jalankanTugas('likecom')">
+            <span id="textLikeCom">2. Like & Comment Video</span>
+            <svg id="iconLikeCom" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+        </button>
+    </div>
+
+    <!-- Tombol Dapatkan Link -->
+    <button class="btn-unlock" id="btnUnlock" onclick="bukaLinkAsli()">Dapatkan Link Asli</button>
+</div>
+
+<!-- ============================================== -->
+<!-- SCRIPT GABUNGAN LOGIKA                         -->
+<!-- ============================================== -->
 <script>
+    // Variabel Simpan URL Asli
+    let targetUrlAsli = ""; 
+
+    // Elemen Halaman Password
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
     const errorMsg = document.getElementById("errorMsg");
     const btnWa = document.getElementById("btnWa"); 
     const pagePassword = document.getElementById("page-password");
+    const pageSub4Unlock = document.getElementById("page-sub4unlock");
 
     window.onload = () => {
         btnUser.onclick = verifikasiPassword;
         passwordInput.focus();
     };
 
+    // ==========================================
+    // 1. LOGIKA CEK PASSWORD
+    // ==========================================
     async function verifikasiPassword() {
         const password = passwordInput.value.trim();
         if(!password) return;
@@ -117,25 +217,8 @@
             
             if (res.ok) {
                 const data = await res.json();
-                btnUser.innerText = "membuka..."; 
-                
-                // 1. Coba eksekusi buka di tab baru (blank)
-                let newTab = window.open(data.url, '_blank');
-                
-                // 2. Deteksi apakah pop-up blocker menghalangi eksekusi di atas
-                // Jika diblokir, newTab akan bernilai null/undefined
-                if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                    // Fallback: Langsung hajar alihkan di tab ini juga (anti-gagal)
-                    window.location.href = data.url; 
-                } else {
-                    // Jika tab baru SUKSES terbuka, kembalikan tombol biar user ga bingung
-                    btnUser.innerText = "Berhasil";
-                    setTimeout(() => {
-                        btnUser.innerText = "Lanjut";
-                        btnUser.disabled = false;
-                        passwordInput.value = "";
-                    }, 2000);
-                }
+                targetUrlAsli = data.url; 
+                tampilkanSub4Unlock();
             } else {
                 errorMsg.innerText = "password tidak valid.";
                 errorMsg.style.display = "block";
@@ -150,7 +233,20 @@
         }
     }
 
-    // Animasi Keyboard
+    function tampilkanSub4Unlock() {
+        pagePassword.style.display = "none";
+        btnWa.style.display = "none"; 
+        
+        // Ganti tema secara utuh (background transition)
+        document.documentElement.className = "theme-s4u";
+        document.body.className = "theme-s4u";
+        
+        pageSub4Unlock.style.display = "block";
+    }
+
+    // ==========================================
+    // ANIMASI KEYBOARD ASLI (DIKEMBALIKAN)
+    // ==========================================
     passwordInput.addEventListener("keypress", (e) => { 
         if (e.key === "Enter") verifikasiPassword(); 
     });
@@ -168,6 +264,147 @@
 
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', handleKeyboardPosition);
+    }
+
+
+    // ==========================================
+    // 2. LOGIKA SUB4UNLOCK (USER-FRIENDLY & ANTI LEMOT)
+    // ==========================================
+    const linkSubscribe = "https://www.youtube.com/@kingbawok";
+    const linkVideo = "https://youtu.be/KKwJ50nd5B4"; 
+
+    let statusSub = false;
+    let statusLikeCom = false;
+    
+    let tugasAktif = null; 
+    let waktuKlikTugas = 0; 
+    let userSudahPindahLayar = false;
+    let timeoutBatal = null;
+
+    // Deteksi aktivitas pindah tab / buka aplikasi
+    document.addEventListener("visibilitychange", () => {
+        if (!tugasAktif) return;
+
+        if (document.hidden) {
+            // Begitu layar web ini tertutup (berarti YouTube kebuka), catat!
+            userSudahPindahLayar = true;
+        } else {
+            // User KEMBALI ke halaman web kita
+            if (userSudahPindahLayar) {
+                let durasi = Date.now() - waktuKlikTugas;
+
+                // Abaikan jika ini cuma kedipan layar HP saat loading aplikasi (< 800ms)
+                if (durasi < 800) return;
+
+                // Kalau dia udah beneran pindah layar dan balik lagi, LANGSUNG SUKSES.
+                // Gak peduli HP dia butuh 2 detik, 5 detik, atau 1 jam.
+                clearTimeout(timeoutBatal);
+                
+                // Kasih animasi "Memeriksa..." selama 1.5 detik biar elegan, lalu Selesai.
+                setTimeout(() => {
+                    selesaikanTugas(true, "Selesai");
+                }, 1500);
+            }
+        }
+    });
+
+    function jalankanTugas(jenis) {
+        if (tugasAktif) return;
+        if (jenis === 'sub' && statusSub) return;
+        if (jenis === 'likecom' && statusLikeCom) return;
+
+        tugasAktif = jenis;
+        waktuKlikTugas = Date.now(); 
+        userSudahPindahLayar = false;
+
+        const isSub = jenis === 'sub';
+        const targetUrl = isSub ? linkSubscribe : linkVideo;
+
+        const btnId = isSub ? 'btnSub' : 'btnLikeCom';
+        const textId = isSub ? 'textSub' : 'textLikeCom';
+        const iconId = isSub ? 'iconSub' : 'iconLikeCom';
+        
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+        const icon = document.getElementById(iconId);
+        const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
+
+        // Membuka link YouTube dengan aman
+        const a = document.createElement('a');
+        a.href = targetUrl;
+        a.target = '_blank';
+        a.rel = 'noreferrer noopener'; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a); 
+
+        // Ubah UI jadi Loading "Memeriksa..."
+        btn.className = 'btn-task checking';
+        text.innerText = "Memeriksa...";
+        icon.classList.add('icon-spin');
+        icon.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>'; 
+
+        // Kunci tombol sebelahnya sementara
+        if (!((isSub && statusLikeCom) || (!isSub && statusSub))) {
+            otherBtn.classList.add('disabled');
+        }
+
+        // SATU-SATUNYA PENYEBAB GAGAL:
+        // Kalau tombol diklik, tapi selama 4 detik layar ga pindah-pindah (misal Pop-up diblokir browser)
+        timeoutBatal = setTimeout(() => {
+            if (!userSudahPindahLayar) {
+                selesaikanTugas(false, "Coba Lagi");
+            }
+        }, 4000); 
+    }
+
+    function selesaikanTugas(sukses, pesan) {
+        const isSub = tugasAktif === 'sub';
+        const btn = document.getElementById(isSub ? 'btnSub' : 'btnLikeCom');
+        const text = document.getElementById(isSub ? 'textSub' : 'textLikeCom');
+        const icon = document.getElementById(isSub ? 'iconSub' : 'iconLikeCom');
+        const otherBtn = document.getElementById(isSub ? 'btnLikeCom' : 'btnSub');
+
+        otherBtn.classList.remove('disabled'); 
+        icon.classList.remove('icon-spin');
+
+        if (sukses) {
+            btn.className = 'btn-task done';
+            text.innerText = pesan;
+            icon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+
+            if (isSub) statusSub = true; else statusLikeCom = true;
+            cekSemuaTugas();
+        } else {
+            btn.className = 'btn-task failed';
+            text.innerText = pesan; 
+            if (isSub) {
+                icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+            } else {
+                icon.innerHTML = '<path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>';
+            }
+        }
+
+        tugasAktif = null;
+    }
+
+    function cekSemuaTugas() {
+        if (statusSub && statusLikeCom) {
+            const btnUnlock = document.getElementById('btnUnlock');
+            btnUnlock.classList.add('active');
+            btnUnlock.removeAttribute('disabled');
+        }
+    }
+
+    function bukaLinkAsli() {
+        if (statusSub && statusLikeCom && targetUrlAsli) {
+            const a = document.createElement('a');
+            a.href = targetUrlAsli;
+            a.target = '_self'; 
+            a.rel = 'noreferrer noopener';
+            document.body.appendChild(a);
+            a.click();
+        }
     }
 </script>
 </body>
