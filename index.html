@@ -6,6 +6,12 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
+    <!-- DNS-PREFETCH DAN PRECONNECT UNTUK IKLAN (BARU) -->
+    <link rel="dns-prefetch" href="https://conductivebreeds.com">
+    <link rel="preconnect" href="https://conductivebreeds.com">
+    <link rel="dns-prefetch" href="https://omg10.com">
+    <link rel="preconnect" href="https://omg10.com">
+    
     <!-- Font Poppins untuk halaman Modern -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -35,7 +41,7 @@
         /* === EFEK TRANSISI HALAMAN === */
         html { transition: background 0.5s ease; height: 100%; width: 100%; }
         html.theme-pw { background-color: #ffffff; }
-        html.theme-ads { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
+        html.theme-ads { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); } /* Background gradient yang kamu suka, tetap ada! */
 
         /* Tema 1: Halaman Password (Original) */
         body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
@@ -161,6 +167,9 @@
     const errorMsg = document.getElementById("errorMsg");
     const pagePassword = document.getElementById("page-password");
     const pageIklan = document.getElementById("page-iklan");
+    const btnIklan = document.getElementById('btnIklan');
+    const textIklan = document.getElementById('textIklan');
+    const instruction = document.getElementById('instruction');
 
     // ==========================================
     // OTAK UTAMA: HYBRID REDIRECT ANTI-PROXY
@@ -186,12 +195,14 @@
         bersihkanSessionMisi();
 
         if (durasi >= 5000) {
+            // SUKSES: Langsung redirect ke tujuan akhir
             const urlTujuan = sessionStorage.getItem('urlAsliDisimpan');
             sessionStorage.removeItem('urlAsliDisimpan');
             if (urlTujuan) window.location.replace(urlTujuan);
         } else {
+            // GAGAL: Muat ulang halaman iklan dengan pesan error
             targetUrlAsli = sessionStorage.getItem('urlAsliDisimpan');
-            tampilkanHalamanIklan(true);
+            tampilkanHalamanIklan(true); // Kirim 'true' untuk flag gagal
         }
     }
 
@@ -244,9 +255,6 @@
         pagePassword.style.display = "none";
         pageIklan.style.display = "block";
 
-        const btnIklan = document.getElementById('btnIklan');
-        const textIklan = document.getElementById('textIklan');
-
         if (isGagal) {
             btnIklan.className = 'btn-task failed';
             textIklan.innerText = "Gagal! Belum 5 Detik, Ulangi!";
@@ -255,6 +263,11 @@
                 textIklan.innerText = "Klik Disini (Wajib 5 Detik)";
             }, 3000);
         }
+        
+        // Pastikan tombol unlock disabled saat halaman iklan ditampilkan, kecuali jika sudah sukses
+        const btnUnlock = document.getElementById('btnUnlock');
+        btnUnlock.classList.remove('active');
+        btnUnlock.disabled = true;
     }
     
     passwordInput.addEventListener("keypress", (e) => { if (e.key === "Enter") verifikasiPassword(); });
