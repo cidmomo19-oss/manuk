@@ -100,7 +100,6 @@
         .btn-task svg { width: 24px; height: 24px; fill: white; flex-shrink: 0; }
         
         /* Status Tombol Misi */
-        .btn-task.checking { background: #f39c12; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3); pointer-events: none; }
         .btn-task.done { background: linear-gradient(135deg, #00b09b, #96c93d); box-shadow: 0 8px 20px rgba(0, 176, 155, 0.3); pointer-events: none; }
         .btn-task.failed { background: #ff4757; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); animation: shake 0.4s ease-in-out; }
 
@@ -117,8 +116,6 @@
         
         /* Animasi */
         @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(9, 132, 227, 0); } 100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); } }
-        .icon-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
@@ -179,23 +176,37 @@
     const pageIklan = document.getElementById("page-iklan");
 
     // ==========================================
-    // INIT (Saat Halaman Dimuat)
+    // INIT (Menggunakan Pageshow agar kebal Bfcache)
     // ==========================================
-    window.onload = () => {
+    window.addEventListener("pageshow", (event) => {
         btnUser.onclick = verifikasiPassword;
         
-        // CEK: Apakah dia baru saja "Back" dari iklan?
         const sedangTungguIklan = sessionStorage.getItem('tungguIklan');
+        const urlTersimpan = sessionStorage.getItem('urlAsliDisimpan');
         
         if (sedangTungguIklan === 'true') {
-            // Evaluasi waktunya jika ya
+            // Evaluasi waktunya jika dia baru "Back" dari klik iklan
             evaluasiKembaliDariIklan();
+        } else if (urlTersimpan) {
+            // Jika dia refresh halaman (sudah masukin PW tapi belum klik iklan)
+            targetUrlAsli = urlTersimpan;
+            tampilkanHalamanIklan();
         } else {
-            // Jika baru pertama buka web, set tema normal dan fokus ke password
+            // Jika baru pertama buka web
             document.documentElement.className = "theme-pw";
             passwordInput.focus();
         }
-    };
+    });
+
+    // Fitur Tambahan: Deteksi kalau HP cuma pindah tab (Visibility API)
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            const sedangTungguIklan = sessionStorage.getItem('tungguIklan');
+            if (sedangTungguIklan === 'true') {
+                evaluasiKembaliDariIklan();
+            }
+        }
+    });
 
     // ==========================================
     // 1. LOGIKA CEK PASSWORD
@@ -229,7 +240,7 @@
                 const data = await res.json();
                 targetUrlAsli = data.url; 
                 
-                // SIMPAN Link Asli ke Memory agar kalau halaman ter-refresh saat klik "Back", link-nya gak hilang
+                // SIMPAN Link Asli ke Memory
                 sessionStorage.setItem('urlAsliDisimpan', targetUrlAsli);
 
                 tampilkanHalamanIklan();
@@ -270,16 +281,13 @@
         sessionStorage.setItem('waktuKlikIklan', Date.now());
         sessionStorage.setItem('tungguIklan', 'true');
 
-        // Pindah (Redirect) halaman ke link Iklan di tab yang sama
+        // Pindah (Redirect) halaman ke link Iklan
         window.location.href = linkIklan;
     }
 
     function evaluasiKembaliDariIklan() {
-        // Karena halaman ter-refresh/kembali, tarik lagi link asli dari memory
         targetUrlAsli = sessionStorage.getItem('urlAsliDisimpan');
-        
-        // Langsung tampilkan halaman iklan (Bypass form password)
-        tampilkanHalamanIklan();
+        tampilkanHalamanIklan(); // Pastikan halaman iklan tampil
 
         const btn = document.getElementById('btnIklan');
         const text = document.getElementById('textIklan');
@@ -295,7 +303,7 @@
         if (durasiPindah >= 5000) {
             // BERHASIL 
             sessionStorage.removeItem('waktuKlikIklan');
-            sessionStorage.removeItem('tungguIklan'); // Selesai
+            sessionStorage.removeItem('tungguIklan'); 
             
             btn.className = 'btn-task done';
             text.innerText = "Terima kasih banyak! ☕";
@@ -306,20 +314,20 @@
             btnUnlock.classList.add('active');
             btnUnlock.removeAttribute('disabled');
         } else {
-            // GAGAL (< 5 DETIK)
+            // GAGAL (< 5 DETIK) -> LANGSUNG EKSEKUSI ANIMASI
             sessionStorage.removeItem('waktuKlikIklan');
-            sessionStorage.removeItem('tungguIklan'); // Reset status agar disuruh klik lagi
+            sessionStorage.removeItem('tungguIklan'); 
 
             btn.className = 'btn-task failed';
             text.innerText = "Yah belum 5 detik, diulang yuk!";
             icon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
 
-            // Reset tombol setelah 2.5 detik agar bisa diklik lagi
+            // Reset tombol setelah 3 detik agar dibaca & bisa diklik lagi
             setTimeout(() => {
                 btn.className = 'btn-task';
                 text.innerText = "Klik disini (Wajib 5 Detik)";
                 icon.innerHTML = '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>';
-            }, 2500);
+            }, 3000);
         }
     }
 
@@ -328,10 +336,7 @@
     // ==========================================
     function bukaLinkAsli() {
         if (targetUrlAsli) {
-            // Bersihkan memory karena sudah selesai semua
             sessionStorage.removeItem('urlAsliDisimpan'); 
-            
-            // Redirect ke link aslinya
             window.location.href = targetUrlAsli;
         }
     }
