@@ -25,7 +25,6 @@
         body { 
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
             display: flex; justify-content: center; align-items: center; 
-            
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; 
         }
 
@@ -38,10 +37,10 @@
         html.theme-pw { background-color: #ffffff; }
         html.theme-ads { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
 
-        /* Tema 1: Halaman Password (Original) */
+        /* Tema 1: Halaman Password */
         body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
         
-        /* Tema 2: Halaman Iklan (Modern Premium) */
+        /* Tema 2: Halaman Iklan */
         body.theme-ads { font-family: 'Poppins', sans-serif; }
 
         /* Container Pages */
@@ -54,7 +53,7 @@
         
         #page-password.keyboard-active { transform: translateY(-25vh); }
 
-        /* === CSS HALAMAN PASSWORD (ASLI 100%) === */
+        /* === CSS HALAMAN PASSWORD === */
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; cursor: default; }
         .input-line { 
             width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
@@ -79,7 +78,7 @@
         
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
         
-        /* === CSS HALAMAN IKLAN (MODERN PREMIUM) === */
+        /* === CSS HALAMAN IKLAN === */
         .s4u-card {
             background: rgba(255, 255, 255, 0.95); padding: 40px 25px; border-radius: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center;
@@ -109,14 +108,14 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; border: none; width: 100%; 
             font-family: inherit; box-shadow: 0 8px 20px rgba(255, 126, 95, 0.3);
         }
-        .btn-task:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
-        .btn-task:active { transform: translateY(0) scale(0.98); }
+        .btn-task:hover:not(.checking) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
+        .btn-task:active:not(.checking) { transform: translateY(0) scale(0.98); }
         .btn-task svg { width: 24px; height: 24px; fill: white; flex-shrink: 0; }
         
+        /* State Tombol Tambahan */
+        .btn-task.checking { background: #f39c12; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3); pointer-events: none; }
         .btn-task.failed { background: #ff4757; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); animation: shake 0.4s ease-in-out; pointer-events: none; }
-        
-        /* Tambahan state tombol sukses agar nyatu dengan desain */
-        .btn-task.success { background: linear-gradient(135deg, #00b894, #55efc4) !important; pointer-events: none; box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3); }
+        .btn-task.success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; pointer-events: none; box-shadow: 0 8px 20px rgba(0, 176, 155, 0.3); }
 
         .btn-unlock {
             background: #dfe6e9; color: #b2bec3; width: 100%; padding: 16px; border: none; border-radius: 14px;
@@ -130,6 +129,10 @@
         
         @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(9, 132, 227, 0); } 100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* Icon Loading */
+        .icon-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="theme-pw">
@@ -163,7 +166,7 @@
     const linkIklan2 = "https://omg10.com/4/10390860";
     let targetUrlAsli = ""; 
 
-    // Variabel pendeteksi tab bolak-balik
+    // Variabel pendeteksi tab bolak-balik (Mesin Punya Saya)
     let waktuMulaiIklan = 0;
     let sedangMembukaIklan = false;
 
@@ -174,6 +177,7 @@
     const pageIklan = document.getElementById("page-iklan");
     const btnIklan = document.getElementById('btnIklan');
     const textIklan = document.getElementById('textIklan');
+    const iconIklan = document.getElementById('iconIklan');
     const btnUnlock = document.getElementById('btnUnlock');
 
     window.addEventListener("pageshow", () => {
@@ -248,7 +252,7 @@
         localStorage.setItem('urutanIklanMisi', urutan + 1);
 
         // ========================================================
-        // TAB BARU: REDIRECT KHUSUS SUPER CEPAT
+        // TAB BARU: REDIRECT KHUSUS SUPER CEPAT & ANTI BLOKIR (Punya Saya)
         // ========================================================
         const newTab = window.open('about:blank', '_blank');
         const redirectHTML = `
@@ -276,10 +280,16 @@
         // Mulai mencatat waktu dan status
         waktuMulaiIklan = Date.now();
         sedangMembukaIklan = true;
+
+        // KATA-KATA ABANG WAKTU NUNGGU + EFEK LOADING
+        btnIklan.className = 'btn-task checking';
+        textIklan.innerText = "Menunggu kamu kembali...";
+        iconIklan.classList.add('icon-spin');
+        iconIklan.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>';
     }
 
     // ========================================================
-    // DETEKSI KETIKA USER KEMBALI KE TAB UTAMA
+    // DETEKSI KETIKA USER KEMBALI KE TAB UTAMA (Punya Saya)
     // ========================================================
     document.addEventListener("visibilitychange", () => {
         // Jika web kembali terlihat (visible) dan statusnya sedang menunggu user balik dari iklan
@@ -287,23 +297,26 @@
             
             let waktuDihabiskan = Date.now() - waktuMulaiIklan;
             sedangMembukaIklan = false; // reset status
+            iconIklan.classList.remove('icon-spin'); // Matikan putaran icon
 
             if (waktuDihabiskan < 5000) {
-                // GAGAL: Waktu kurang dari 5 detik
+                // GAGAL: Waktu kurang dari 5 detik (KATA-KATA ABANG)
                 btnIklan.className = 'btn-task failed';
-                textIklan.innerText = "Gagal! Belum 5 Detik, Ulangi!";
+                textIklan.innerText = "Yah belum 5 detik, diulang yuk!";
+                iconIklan.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
                 
                 // Kembalikan tombol seperti semula setelah animasi error selesai
                 setTimeout(() => {
                     btnIklan.className = 'btn-task';
                     textIklan.innerText = "Klik disini (Wajib 5 Detik)";
+                    iconIklan.innerHTML = '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>';
                 }, 3000);
 
             } else {
-                // SUKSES: Waktu lebih dari 5 detik
+                // SUKSES: Waktu lebih dari 5 detik (KATA-KATA ABANG)
                 btnIklan.className = 'btn-task success';
-                textIklan.innerText = "Selesai ✅";
-                document.getElementById('iconIklan').innerHTML = '<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>';
+                textIklan.innerText = "Terima kasih banyak! ☕";
+                iconIklan.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
                 
                 // Mengaktifkan tombol Dapatkan Link Asli (Tidak Auto Redirect)
                 btnUnlock.disabled = false;
