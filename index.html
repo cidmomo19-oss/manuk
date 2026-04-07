@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
-    <!-- DNS-PREFETCH DAN PRECONNECT UNTUK IKLAN (BARU) -->
+    <!-- DNS-PREFETCH DAN PRECONNECT UNTUK IKLAN -->
     <link rel="dns-prefetch" href="https://conductivebreeds.com">
     <link rel="preconnect" href="https://conductivebreeds.com">
     <link rel="dns-prefetch" href="https://omg10.com">
@@ -18,7 +18,6 @@
     <style>
         /* === MENGHILANGKAN EFEK BIRU (TAP & SELECTION) === */
         * {
-            /* Menghilangkan kilatan biru saat tombol/link diklik di HP */
             -webkit-tap-highlight-color: transparent !important; 
             outline: none !important;
         }
@@ -26,20 +25,11 @@
         body { 
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
             display: flex; justify-content: center; align-items: center; 
-            
-            /* Mencegah teks bisa diblok/disalin (Biar kaya aplikasi) */
-            -webkit-user-select: none; /* Safari/Chrome */
-            -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* IE/Edge */
-            user-select: none; 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; 
         }
 
-        /* Khusus input form harus tetap bisa diketik/diklik */
         input {
-            -webkit-user-select: auto;
-            -moz-user-select: auto;
-            -ms-user-select: auto;
-            user-select: auto;
+            -webkit-user-select: auto; -moz-user-select: auto; -ms-user-select: auto; user-select: auto;
         }
 
         /* === EFEK TRANSISI HALAMAN === */
@@ -47,10 +37,10 @@
         html.theme-pw { background-color: #ffffff; }
         html.theme-ads { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
 
-        /* Tema 1: Halaman Password (Original) */
+        /* Tema 1: Halaman Password */
         body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
         
-        /* Tema 2: Halaman Iklan (Modern Premium) */
+        /* Tema 2: Halaman Iklan */
         body.theme-ads { font-family: 'Poppins', sans-serif; }
 
         /* Container Pages */
@@ -59,11 +49,11 @@
             box-sizing: border-box; text-align: center; 
             transition: transform 0.3s ease-out; 
         }
-        #page-iklan { display: none; width: 90%; max-width: 400px; /* `perspective: 1000px;` dihapus, mengikuti template kamu */ }
+        #page-iklan { display: none; width: 90%; max-width: 400px; }
         
         #page-password.keyboard-active { transform: translateY(-25vh); }
 
-        /* === CSS HALAMAN PASSWORD (ASLI 100%) === */
+        /* === CSS HALAMAN PASSWORD === */
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; cursor: default; }
         .input-line { 
             width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
@@ -88,7 +78,7 @@
         
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
         
-        /* === CSS HALAMAN IKLAN (MODERN PREMIUM) === */
+        /* === CSS HALAMAN IKLAN === */
         .s4u-card {
             background: rgba(255, 255, 255, 0.95); padding: 40px 25px; border-radius: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center;
@@ -118,12 +108,15 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; border: none; width: 100%; 
             font-family: inherit; box-shadow: 0 8px 20px rgba(255, 126, 95, 0.3);
         }
-        .btn-task:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
-        .btn-task:active { transform: translateY(0) scale(0.98); }
+        .btn-task:hover:not(.checking) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
+        .btn-task:active:not(.checking) { transform: translateY(0) scale(0.98); }
         .btn-task svg { width: 24px; height: 24px; fill: white; flex-shrink: 0; }
         
+        /* State Tombol Tambahan */
+        .btn-task.checking { background: #f39c12; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3); pointer-events: none; }
         .btn-task.failed { background: #ff4757; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); animation: shake 0.4s ease-in-out; pointer-events: none; }
-        
+        .btn-task.success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; pointer-events: none; box-shadow: 0 8px 20px rgba(0, 176, 155, 0.3); }
+
         .btn-unlock {
             background: #dfe6e9; color: #b2bec3; width: 100%; padding: 16px; border: none; border-radius: 14px;
             font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.4s ease; font-family: inherit;
@@ -136,6 +129,10 @@
         
         @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(9, 132, 227, 0); } 100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* Icon Loading */
+        .icon-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="theme-pw">
@@ -169,6 +166,10 @@
     const linkIklan2 = "https://omg10.com/4/10390860";
     let targetUrlAsli = ""; 
 
+    // Variabel pendeteksi tab bolak-balik (Mesin Punya Saya)
+    let waktuMulaiIklan = 0;
+    let sedangMembukaIklan = false;
+
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
     const errorMsg = document.getElementById("errorMsg");
@@ -176,43 +177,18 @@
     const pageIklan = document.getElementById("page-iklan");
     const btnIklan = document.getElementById('btnIklan');
     const textIklan = document.getElementById('textIklan');
-    // `instruction` tidak lagi dipakai karena teksnya statis di HTML
-    // const instruction = document.getElementById('instruction'); 
+    const iconIklan = document.getElementById('iconIklan');
+    const btnUnlock = document.getElementById('btnUnlock');
 
-    // ==========================================
-    // OTAK UTAMA: HYBRID REDIRECT ANTI-PROXY
-    // ==========================================
     window.addEventListener("pageshow", () => {
-        const misiSedangAktif = sessionStorage.getItem('misiSedangAktif');
         const urlTersimpan = sessionStorage.getItem('urlAsliDisimpan');
-
-        if (misiSedangAktif === 'true') {
-            handleKembaliDariIklan();
-        } else if (urlTersimpan) {
+        if (urlTersimpan) {
             targetUrlAsli = urlTersimpan;
-            tampilkanHalamanIklan(false);
+            tampilkanHalamanIklan();
         } else {
             tampilkanHalamanPassword();
         }
     });
-
-    function handleKembaliDariIklan() {
-        const waktuMulai = parseInt(sessionStorage.getItem('waktuMulaiMisi'));
-        const durasi = Date.now() - waktuMulai;
-        
-        bersihkanSessionMisi();
-
-        if (durasi >= 5000) {
-            // SUKSES: Langsung redirect ke tujuan akhir
-            const urlTujuan = sessionStorage.getItem('urlAsliDisimpan');
-            sessionStorage.removeItem('urlAsliDisimpan'); // Hapus URL Asli setelah berhasil
-            if (urlTujuan) window.location.replace(urlTujuan);
-        } else {
-            // GAGAL: Muat ulang halaman iklan dengan pesan error
-            targetUrlAsli = sessionStorage.getItem('urlAsliDisimpan'); // Tetap simpan URL Asli
-            tampilkanHalamanIklan(true); // Kirim 'true' untuk flag gagal
-        }
-    }
 
     async function verifikasiPassword() {
         const password = passwordInput.value.trim();
@@ -230,7 +206,7 @@
                 const data = await res.json();
                 targetUrlAsli = data.url;
                 sessionStorage.setItem('urlAsliDisimpan', targetUrlAsli);
-                tampilkanHalamanIklan(false);
+                tampilkanHalamanIklan();
             } else {
                 gagalVerifikasi("password tidak valid.");
             }
@@ -257,29 +233,11 @@
         passwordInput.focus();
     }
 
-    function tampilkanHalamanIklan(isGagal) {
+    function tampilkanHalamanIklan() {
         document.documentElement.className = "theme-ads";
         document.body.className = "theme-ads";
         pagePassword.style.display = "none";
         pageIklan.style.display = "block";
-
-        if (isGagal) {
-            btnIklan.className = 'btn-task failed';
-            textIklan.innerText = "Gagal! Belum 5 Detik, Ulangi!";
-            setTimeout(() => {
-                btnIklan.className = 'btn-task';
-                textIklan.innerText = "Klik disini (Wajib 5 Detik)";
-            }, 3000);
-        } else {
-            // Reset ke tampilan normal jika bukan dari gagal
-            btnIklan.className = 'btn-task';
-            textIklan.innerText = "Klik disini (Wajib 5 Detik)";
-        }
-        
-        // Pastikan tombol unlock disabled saat halaman iklan ditampilkan (karena akan redirect otomatis jika sukses)
-        const btnUnlock = document.getElementById('btnUnlock');
-        btnUnlock.classList.remove('active'); // Hapus class active
-        btnUnlock.disabled = true; // Pastikan tombol disabled
     }
     
     passwordInput.addEventListener("keypress", (e) => { if (e.key === "Enter") verifikasiPassword(); });
@@ -287,25 +245,91 @@
     passwordInput.addEventListener('blur', () => pagePassword.classList.remove('keyboard-active'));
 
     function bukaIklan() {
+        if(sedangMembukaIklan) return; // Mencegah double klik
+
         let urutan = parseInt(localStorage.getItem('urutanIklanMisi') || 0);
         let linkTarget = (urutan % 2 === 0) ? linkIklan1 : linkIklan2;
         localStorage.setItem('urutanIklanMisi', urutan + 1);
 
-        sessionStorage.setItem('misiSedangAktif', 'true');
-        sessionStorage.setItem('waktuMulaiMisi', Date.now());
+        // ========================================================
+        // TAB BARU: REDIRECT KHUSUS SUPER CEPAT & ANTI BLOKIR (Punya Saya)
+        // ========================================================
+        const newTab = window.open('about:blank', '_blank');
+        const redirectHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Mengalihkan...</title>
+                <style>
+                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin:0;}
+                    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #FF7E5F; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                </style>
+            </head>
+            <body>
+                <div class="loader"></div>
+                <script>setTimeout(function() { window.location.replace("${linkTarget}"); }, 800);<\/script>
+            </body>
+            </html>
+        `;
+        newTab.document.write(redirectHTML);
+        newTab.document.close();
 
-        window.location.href = linkTarget;
+        // Mulai mencatat waktu dan status
+        waktuMulaiIklan = Date.now();
+        sedangMembukaIklan = true;
+
+        // KATA-KATA ABANG WAKTU NUNGGU + EFEK LOADING
+        btnIklan.className = 'btn-task checking';
+        textIklan.innerText = "Menunggu kamu kembali...";
+        iconIklan.classList.add('icon-spin');
+        iconIklan.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>';
     }
 
-    function bersihkanSessionMisi() {
-        sessionStorage.removeItem('misiSedangAktif');
-        sessionStorage.removeItem('waktuMulaiMisi');
-    }
-    
-    // Tombol "Dapatkan Link Asli" sekarang hanya sebagai cadangan jika semua gagal.
-    // Tidak akan pernah terlihat oleh user yang sukses, karena akan redirect otomatis.
+    // ========================================================
+    // DETEKSI KETIKA USER KEMBALI KE TAB UTAMA (Punya Saya)
+    // ========================================================
+    document.addEventListener("visibilitychange", () => {
+        // Jika web kembali terlihat (visible) dan statusnya sedang menunggu user balik dari iklan
+        if (document.visibilityState === 'visible' && sedangMembukaIklan) {
+            
+            let waktuDihabiskan = Date.now() - waktuMulaiIklan;
+            sedangMembukaIklan = false; // reset status
+            iconIklan.classList.remove('icon-spin'); // Matikan putaran icon
+
+            if (waktuDihabiskan < 5000) {
+                // GAGAL: Waktu kurang dari 5 detik (KATA-KATA ABANG)
+                btnIklan.className = 'btn-task failed';
+                textIklan.innerText = "Yah belum 5 detik, diulang yuk!";
+                iconIklan.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+                
+                // Kembalikan tombol seperti semula setelah animasi error selesai
+                setTimeout(() => {
+                    btnIklan.className = 'btn-task';
+                    textIklan.innerText = "Klik disini (Wajib 5 Detik)";
+                    iconIklan.innerHTML = '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>';
+                }, 3000);
+
+            } else {
+                // SUKSES: Waktu lebih dari 5 detik (KATA-KATA ABANG)
+                btnIklan.className = 'btn-task success';
+                textIklan.innerText = "Terima kasih banyak! ☕";
+                iconIklan.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+                
+                // Mengaktifkan tombol Dapatkan Link Asli (Tidak Auto Redirect)
+                btnUnlock.disabled = false;
+                btnUnlock.classList.add('active');
+            }
+        }
+    });
+
     function bukaLinkAsli() {
-        if (targetUrlAsli) window.location.href = targetUrlAsli;
+        if (targetUrlAsli) {
+            sessionStorage.removeItem('urlAsliDisimpan'); // hapus memori
+            window.location.replace(targetUrlAsli); // gas ke link asli
+        }
     }
 </script>
 </body>
