@@ -6,137 +6,71 @@
     <meta name="referrer" content="no-referrer">
     <title>Gateway Secure</title>
     
-    <!-- DNS-PREFETCH DAN PRECONNECT UNTUK IKLAN -->
     <link rel="dns-prefetch" href="https://conductivebreeds.com">
     <link rel="preconnect" href="https://conductivebreeds.com">
     <link rel="dns-prefetch" href="https://omg10.com">
     <link rel="preconnect" href="https://omg10.com">
     
-    <!-- Font Poppins untuk halaman Modern -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* === MENGHILANGKAN EFEK BIRU (TAP & SELECTION) === */
-        * {
-            -webkit-tap-highlight-color: transparent !important; 
-            outline: none !important;
-        }
+        * { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
+        body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; -webkit-user-select: none; user-select: none; }
+        input { -webkit-user-select: auto; user-select: auto; }
 
-        body { 
-            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
-            display: flex; justify-content: center; align-items: center; 
-            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; 
-        }
-
-        input {
-            -webkit-user-select: auto; -moz-user-select: auto; -ms-user-select: auto; user-select: auto;
-        }
-
-        /* === EFEK TRANSISI HALAMAN === */
-        html { transition: background 0.5s ease; height: 100%; width: 100%; }
+        html { height: 100%; width: 100%; }
         html.theme-pw { background-color: #ffffff; }
         html.theme-ads { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); }
-
-        /* Tema 1: Halaman Password */
         body.theme-pw { font-family: "Courier New", Courier, monospace; color: #000000; }
-        
-        /* Tema 2: Halaman Iklan */
         body.theme-ads { font-family: 'Poppins', sans-serif; }
 
-        /* Container Pages */
-        #page-password { 
-            display: block; width: 100%; max-width: 350px; padding: 20px; 
-            box-sizing: border-box; text-align: center; 
-            transition: transform 0.3s ease-out; 
-        }
+        #page-password { display: none; width: 100%; max-width: 350px; padding: 20px; box-sizing: border-box; text-align: center; transition: transform 0.3s ease-out; }
         #page-iklan { display: none; width: 90%; max-width: 400px; }
-        
         #page-password.keyboard-active { transform: translateY(-25vh); }
 
-        /* === CSS HALAMAN PASSWORD === */
         h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; cursor: default; }
-        .input-line { 
-            width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; 
-            font-size: 20px; padding: 10px 0; margin: 15px 0; text-align: center; font-family: inherit; letter-spacing: 3px;
-        }
-        button.btn-minimal { 
-            background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; 
-            cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s;
-        }
+        .input-line { width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; font-size: 20px; padding: 10px 0; margin: 15px 0; text-align: center; font-family: inherit; letter-spacing: 3px; }
+        button.btn-minimal { background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
         
-        .btn-wa-channel {
-            display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%;
-            margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600;
-            color: #ffffff; text-decoration: none; background: linear-gradient(45deg, #25D366, #128C7E);
-            border: none; border-radius: 50px; cursor: pointer; box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-        }
+        .btn-wa-channel { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; margin-top: 15px; padding: 14px 20px; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; background: linear-gradient(45deg, #25D366, #128C7E); border: none; border-radius: 50px; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; }
         .btn-wa-channel:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15); }
         .btn-wa-channel svg { width: 22px; height: 22px; fill: #ffffff; }
         
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
         
-        /* === CSS HALAMAN IKLAN === */
-        .s4u-card {
-            background: rgba(255, 255, 255, 0.95); padding: 40px 25px; border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center;
-            border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(10px);
-            animation: slideUpFade 0.5s ease-out forwards;
-        }
-        
+        .s4u-card { background: rgba(255, 255, 255, 0.95); padding: 40px 25px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(10px); animation: slideUpFade 0.5s ease-out forwards; }
         @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .s4u-header-icon {
-            display: inline-flex; justify-content: center; align-items: center;
-            width: 80px; height: 80px; background: linear-gradient(135deg, #FFF0E6, #FFE0CC);
-            border-radius: 50%; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(255, 126, 95, 0.2);
-        }
+        .s4u-header-icon { display: inline-flex; justify-content: center; align-items: center; width: 80px; height: 80px; background: linear-gradient(135deg, #FFF0E6, #FFE0CC); border-radius: 50%; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(255, 126, 95, 0.2); }
         .s4u-header-icon svg { width: 40px; height: 40px; fill: #FF7E5F; }
         
-        .s4u-card h2 { margin: 0 0 10px 0; color: #2d3436; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; cursor: default; }
+        .s4u-card h2 { margin: 0 0 10px 0; color: #2d3436; font-size: 24px; font-weight: 700; cursor: default; }
         .s4u-card p.subtitle { color: #636e72; font-size: 14px; margin-bottom: 30px; line-height: 1.6; font-weight: 500; cursor: default; }
         .s4u-card p.subtitle b { color: #FF7E5F; }
 
         .task-list { display: flex; flex-direction: column; gap: 15px; margin-bottom: 35px; }
         
-        .btn-task {
-            display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(135deg, #FF7E5F, #FEB47B); color: white; 
-            padding: 16px 22px; border-radius: 14px; font-weight: 600; font-size: 15px; 
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; border: none; width: 100%; 
-            font-family: inherit; box-shadow: 0 8px 20px rgba(255, 126, 95, 0.3);
-        }
+        .btn-task { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #FF7E5F, #FEB47B); color: white; padding: 16px 22px; border-radius: 14px; font-weight: 600; font-size: 15px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; border: none; width: 100%; font-family: inherit; box-shadow: 0 8px 20px rgba(255, 126, 95, 0.3); }
         .btn-task:hover:not(.checking) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
-        .btn-task:active:not(.checking) { transform: translateY(0) scale(0.98); }
         .btn-task svg { width: 24px; height: 24px; fill: white; flex-shrink: 0; }
         
-        /* State Tombol Tambahan */
         .btn-task.checking { background: #f39c12; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3); pointer-events: none; }
         .btn-task.failed { background: #ff4757; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); animation: shake 0.4s ease-in-out; pointer-events: none; }
         .btn-task.success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; pointer-events: none; box-shadow: 0 8px 20px rgba(0, 176, 155, 0.3); }
 
-        .btn-unlock {
-            background: #dfe6e9; color: #b2bec3; width: 100%; padding: 16px; border: none; border-radius: 14px;
-            font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.4s ease; font-family: inherit;
-        }
-        .btn-unlock.active { 
-            background: #0984e3; color: white; cursor: pointer; 
-            box-shadow: 0 8px 20px rgba(9, 132, 227, 0.4); animation: pulseBtn 2s infinite; 
-        }
-        .btn-unlock.active:hover { background: #74b9ff; transform: translateY(-2px); }
+        .btn-unlock { background: #dfe6e9; color: #b2bec3; width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.4s ease; font-family: inherit; }
+        .btn-unlock.active { background: #0984e3; color: white; cursor: pointer; box-shadow: 0 8px 20px rgba(9, 132, 227, 0.4); animation: pulseBtn 2s infinite; }
         
         @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(9, 132, 227, 0); } 100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        
-        /* Icon Loading */
         .icon-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="theme-pw">
+<body>
 
+<!-- HALAMAN PASSWORD -->
 <div id="page-password">
     <h2 class="minimal-title">masukkan password</h2>
     <input type="text" id="passwordInput" class="input-line" autocomplete="off">
@@ -146,6 +80,7 @@
     <div id="errorMsg" class="error">password tidak valid.</div>
 </div>
 
+<!-- HALAMAN IKLAN -->
 <div id="page-iklan" class="s4u-card">
     <div class="s4u-header-icon"><svg viewBox="0 0 24 24"><path d="M20,3H4v10c0,2.21,1.79,4,4,4h6c2.21,0,4-1.79,4-4v-3h2c1.11,0,2-0.9,2-2V5C22,3.9,21.11,3,20,3z M20,8h-2V5h2V8z M4,19h16v2H4V19z"/></svg></div>
     <h2>Bantu admin beli jajan ☕</h2>
@@ -164,11 +99,6 @@
 <script>
     const linkIklan1 = "https://conductivebreeds.com/bmaye227ji?key=21143f6352edf65a6b64615e9bb37bb9";
     const linkIklan2 = "https://omg10.com/4/10390860";
-    let targetUrlAsli = ""; 
-
-    // Variabel pendeteksi tab bolak-balik (Mesin Punya Saya)
-    let waktuMulaiIklan = 0;
-    let sedangMembukaIklan = false;
 
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
@@ -180,12 +110,31 @@
     const iconIklan = document.getElementById('iconIklan');
     const btnUnlock = document.getElementById('btnUnlock');
 
+    // === SISTEM PENGECEK PARAMETER ===
     window.addEventListener("pageshow", () => {
-        const urlTersimpan = sessionStorage.getItem('urlAsliDisimpan');
-        if (urlTersimpan) {
-            targetUrlAsli = urlTersimpan;
+        const urlParams = new URLSearchParams(window.location.search);
+        const sedangDiHalamanIklan = urlParams.get('step') === 'iklan';
+        
+        // HANYA CEK PASSWORD, BUKAN LINK ASLI
+        const kunciTersimpan = sessionStorage.getItem('kunciSesiAman');
+
+        if (sedangDiHalamanIklan && kunciTersimpan) {
             tampilkanHalamanIklan();
+            
+            if (sessionStorage.getItem('iklanTerselesaikan') === 'true') {
+                suksesIklanUI();
+            } else {
+                cekStatusIklan();
+            }
         } else {
+            // Jika buka domain utama, hapus jejak
+            sessionStorage.removeItem('kunciSesiAman');
+            sessionStorage.removeItem('iklanTerselesaikan');
+            localStorage.removeItem('sedangBukaIklan');
+            
+            if (window.location.search) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
             tampilkanHalamanPassword();
         }
     });
@@ -194,19 +143,26 @@
         const password = passwordInput.value.trim();
         if (!password) return;
         errorMsg.style.display = "none";
+        
         if (["ABC", "ABCD", "BALON"].includes(password.toUpperCase())) {
             gagalVerifikasi("⚠️ Password itu hanyalah contoh, password asli ada di dalam video.");
             return;
         }
+        
         btnUser.innerText = "memeriksa...";
         btnUser.disabled = true;
+        
         try {
+            // Cuma ngetes aja ke API, apa bener passwordnya?
             const res = await fetch(`/api/get/${password}?t=${new Date().getTime()}`, { headers: { 'Cache-Control': 'no-cache' } });
+            
             if (res.ok) {
-                const data = await res.json();
-                targetUrlAsli = data.url;
-                sessionStorage.setItem('urlAsliDisimpan', targetUrlAsli);
-                tampilkanHalamanIklan();
+                // RAHASIA: JANGAN SIMPAN DATA.URL DISINI!
+                // Cukup simpan passwordnya sebagai "kunci" sementara
+                sessionStorage.setItem('kunciSesiAman', password);
+                
+                // Pindah ke parameter iklan
+                window.location.href = "?step=iklan"; 
             } else {
                 gagalVerifikasi("password tidak valid.");
             }
@@ -245,90 +201,102 @@
     passwordInput.addEventListener('blur', () => pagePassword.classList.remove('keyboard-active'));
 
     function bukaIklan() {
-        if(sedangMembukaIklan) return; // Mencegah double klik
+        if(localStorage.getItem('sedangBukaIklan') === 'true') return; 
 
         let urutan = parseInt(localStorage.getItem('urutanIklanMisi') || 0);
         let linkTarget = (urutan % 2 === 0) ? linkIklan1 : linkIklan2;
         localStorage.setItem('urutanIklanMisi', urutan + 1);
 
-        // ========================================================
-        // TAB BARU: REDIRECT KHUSUS SUPER CEPAT & ANTI BLOKIR (Punya Saya)
-        // ========================================================
         const newTab = window.open('about:blank', '_blank');
         const redirectHTML = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Mengalihkan...</title>
-                <style>
-                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin:0;}
-                    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #FF7E5F; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                </style>
-            </head>
-            <body>
-                <div class="loader"></div>
-                <script>setTimeout(function() { window.location.replace("${linkTarget}"); }, 800);<\/script>
-            </body>
-            </html>
+            <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mengalihkan...</title><style>body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin:0;} .loader { border: 3px solid #f3f3f3; border-top: 3px solid #FF7E5F; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style></head><body><div class="loader"></div><script>setTimeout(function() { window.location.replace("${linkTarget}"); }, 800);<\/script></body></html>
         `;
         newTab.document.write(redirectHTML);
         newTab.document.close();
 
-        // Mulai mencatat waktu dan status
-        waktuMulaiIklan = Date.now();
-        sedangMembukaIklan = true;
+        localStorage.setItem('waktuMulaiIklan', Date.now());
+        localStorage.setItem('sedangBukaIklan', 'true');
 
-        // KATA-KATA ABANG WAKTU NUNGGU + EFEK LOADING
         btnIklan.className = 'btn-task checking';
         textIklan.innerText = "Menunggu kamu kembali...";
         iconIklan.classList.add('icon-spin');
         iconIklan.innerHTML = '<path d="M12 4V2C6.48 2 2 6.48 2 12h2c0-4.41 3.59-8 8-8z"/>';
     }
 
-    // ========================================================
-    // DETEKSI KETIKA USER KEMBALI KE TAB UTAMA (Punya Saya)
-    // ========================================================
     document.addEventListener("visibilitychange", () => {
-        // Jika web kembali terlihat (visible) dan statusnya sedang menunggu user balik dari iklan
-        if (document.visibilityState === 'visible' && sedangMembukaIklan) {
-            
-            let waktuDihabiskan = Date.now() - waktuMulaiIklan;
-            sedangMembukaIklan = false; // reset status
-            iconIklan.classList.remove('icon-spin'); // Matikan putaran icon
-
-            if (waktuDihabiskan < 5000) {
-                // GAGAL: Waktu kurang dari 5 detik (KATA-KATA ABANG)
-                btnIklan.className = 'btn-task failed';
-                textIklan.innerText = "Yah belum 5 detik, diulang yuk!";
-                iconIklan.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
-                
-                // Kembalikan tombol seperti semula setelah animasi error selesai
-                setTimeout(() => {
-                    btnIklan.className = 'btn-task';
-                    textIklan.innerText = "Klik disini (Wajib 5 Detik)";
-                    iconIklan.innerHTML = '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>';
-                }, 3000);
-
-            } else {
-                // SUKSES: Waktu lebih dari 5 detik (KATA-KATA ABANG)
-                btnIklan.className = 'btn-task success';
-                textIklan.innerText = "Terima kasih banyak! ☕";
-                iconIklan.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
-                
-                // Mengaktifkan tombol Dapatkan Link Asli (Tidak Auto Redirect)
-                btnUnlock.disabled = false;
-                btnUnlock.classList.add('active');
-            }
+        if (document.visibilityState === 'visible') {
+            cekStatusIklan();
         }
     });
 
-    function bukaLinkAsli() {
-        if (targetUrlAsli) {
-            sessionStorage.removeItem('urlAsliDisimpan'); // hapus memori
-            window.location.replace(targetUrlAsli); // gas ke link asli
+    function cekStatusIklan() {
+        if (localStorage.getItem('sedangBukaIklan') !== 'true') return;
+
+        let waktuMulai = parseInt(localStorage.getItem('waktuMulaiIklan') || 0);
+        let waktuDihabiskan = Date.now() - waktuMulai;
+        
+        localStorage.removeItem('sedangBukaIklan'); 
+        iconIklan.classList.remove('icon-spin');
+
+        if (waktuDihabiskan < 5000) {
+            btnIklan.className = 'btn-task failed';
+            textIklan.innerText = "Yah belum 5 detik, diulang yuk!";
+            iconIklan.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+            
+            setTimeout(() => {
+                btnIklan.className = 'btn-task';
+                textIklan.innerText = "Klik disini (Wajib 5 Detik)";
+                iconIklan.innerHTML = '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>';
+            }, 3000);
+
+        } else {
+            suksesIklanUI();
+        }
+    }
+
+    function suksesIklanUI() {
+        btnIklan.className = 'btn-task success';
+        textIklan.innerText = "Terima kasih banyak! ☕";
+        iconIklan.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+        
+        btnUnlock.disabled = false;
+        btnUnlock.classList.add('active');
+        sessionStorage.setItem('iklanTerselesaikan', 'true');
+    }
+
+    // === BARU DI-FETCH SAAT TOMBOL AKHIR DI KLIK ===
+    async function bukaLinkAsli() {
+        const passwordSesi = sessionStorage.getItem('kunciSesiAman');
+        
+        if (!passwordSesi) {
+            alert("Terjadi kesalahan sistem. Silahkan ulang kembali.");
+            window.location.replace('/');
+            return;
+        }
+
+        // Efek loading di tombol
+        btnUnlock.innerText = "Membuka...";
+        btnUnlock.disabled = true;
+
+        try {
+            // Panggil URL asli hanya ketika tombol ini diklik
+            const res = await fetch(`/api/get/${passwordSesi}?t=${new Date().getTime()}`);
+            if (res.ok) {
+                const data = await res.json();
+                
+                // Hapus semua jejak memori
+                sessionStorage.clear(); 
+                
+                // Langsung gas ke link asli
+                window.location.replace(data.url);
+            } else {
+                alert("Sesi password sudah kadaluarsa. Silahkan ulang.");
+                window.location.replace('/');
+            }
+        } catch (err) {
+            alert("Gagal memuat link. Periksa koneksi internetmu.");
+            btnUnlock.innerText = "Dapatkan Link Asli";
+            btnUnlock.disabled = false;
         }
     }
 </script>
