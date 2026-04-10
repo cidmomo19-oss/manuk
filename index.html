@@ -66,12 +66,49 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .icon-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* === STYLE BARU UNTUK PROMO CHANNEL === */
+        .channel-promo {
+            display: block;
+            margin-bottom: 25px; /* Diganti dari margin-top jadi margin-bottom */
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+            background-color: #f9f9f9;
+        }
+        .channel-promo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .channel-promo img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .channel-promo p {
+            margin: 0;
+            padding: 12px 15px;
+            font-family: system-ui, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <!-- HALAMAN PASSWORD -->
 <div id="page-password">
+    <!-- KONTEN BARU DIPINDAHKAN KE SINI -->
+    <a href="https://www.youtube.com/@KurumiDxD" target="_blank" class="channel-promo">
+        <img src="https://i.ibb.co/LD3QR9KJ/Picsart-26-04-09-20-44-51-544.jpg" alt="Channel Kurumi DxD">
+        <p>Upload terbaru pindah ke channel Kurumi DxD!</p>
+    </a>
+    <!-- AKHIR KONTEN BARU -->
+
     <h2 class="minimal-title">masukkan password</h2>
     <input type="text" id="passwordInput" class="input-line" autocomplete="off">
     <button id="btnUser" class="btn-minimal">Lanjut</button>
