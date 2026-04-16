@@ -4,14 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
+    
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
     
     <title>Buka Kunci URL</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        * { -webkit-tap-highlight-color: transparent !important; outline: none !important; box-sizing: border-box; }
+        * { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
         body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; -webkit-user-select: none; user-select: none; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); font-family: 'Poppins', sans-serif; }
 
         .s4u-card { width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.95); padding: 40px 25px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(10px); animation: slideUpFade 0.5s ease-out forwards; }
@@ -30,9 +32,9 @@
         .btn-task:hover:not(.checking) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(255, 126, 95, 0.5); }
         .btn-task svg { width: 24px; height: 24px; fill: white; flex-shrink: 0; }
         
-        .btn-task.checking { background: #f39c12; pointer-events: none; }
-        .btn-task.failed { background: #ff4757; animation: shake 0.4s ease-in-out; pointer-events: none; }
-        .btn-task.success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; pointer-events: none; }
+        .btn-task.checking { background: #f39c12; box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3); pointer-events: none; }
+        .btn-task.failed { background: #ff4757; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); animation: shake 0.4s ease-in-out; pointer-events: none; }
+        .btn-task.success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; pointer-events: none; box-shadow: 0 8px 20px rgba(0, 176, 155, 0.3); }
 
         .btn-unlock { background: #dfe6e9; color: #b2bec3; width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: not-allowed; transition: all 0.4s ease; font-family: inherit; }
         .btn-unlock.active { background: #0984e3; color: white; cursor: pointer; box-shadow: 0 8px 20px rgba(9, 132, 227, 0.4); animation: pulseBtn 2s infinite; }
@@ -61,17 +63,17 @@
 </div>
 
 <script>
-    // PENGECEKAN KEAMANAN (Sesi ID dan Password harus ada dari index.html)
-    const currentId = sessionStorage.getItem('current_id');
-    const secureKey = sessionStorage.getItem('secureKey');
+    // PENGECEKAN KEAMANAN (Sesi Password dan ID harus ada)
+    const sessionKey = sessionStorage.getItem('secureKey');
+    const sessionId = sessionStorage.getItem('secureId');
     
-    if (!currentId || !secureKey || navigator.webdriver) {
-        window.location.replace('/');
+    if (!sessionKey || !sessionId || navigator.webdriver) {
+        window.location.replace('index.html');
     } else {
         document.getElementById('page-task').style.display = 'block';
     }
 
-    // URL IKLAN (Base64)
+    // URL TARGET (Base64 Encoded - Aman dari crawler teks)
     const _t1 = "aHR0cHM6Ly9jb25kdWN0aXZlYnJlZWRzLmNvbS9ibWF5ZTIyN2ppP2tleT0yMTE0M2Y2MzUyZWRmNjVhNmI2NDYxNWU5YmIzN2JiOQ==";
     const _t2 = "aHR0cHM6Ly9vbWcxMC5jb20vNC8xMDM5MDg2MA==";
 
@@ -92,16 +94,19 @@
         if(localStorage.getItem('isProcessingTask') === 'true') return; 
 
         let seq = parseInt(localStorage.getItem('taskSeq') || 0);
-        let adIndex = seq % 2; 
+        let adIndex = seq % 2; // 0 untuk _t1, 1 untuk _t2
         
+        // Simpan iklan mana yang dipakai untuk tugas 5 detik ini
         sessionStorage.setItem('lastAdUsed', adIndex);
         localStorage.setItem('taskSeq', seq + 1);
         
         let dest = (adIndex === 0) ? atob(_t1) : atob(_t2);
 
-        // Buka iklan di tab baru
         const newTab = window.open('about:blank', '_blank');
-        newTab.document.write(`<html><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h3>Memuat Iklan...</h3><script>setTimeout(()=>{window.location.replace("${dest}")},800)<\/script></body></html>`);
+        const redirectHTML = `
+            <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Memuat...</title><style>body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin:0;} .loader { border: 3px solid #f3f3f3; border-top: 3px solid #FF7E5F; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style></head><body><div class="loader"></div><script>setTimeout(function() { window.location.replace("${dest}"); }, 800);<\/script></body></html>
+        `;
+        newTab.document.write(redirectHTML);
         newTab.document.close();
 
         localStorage.setItem('taskStart', Date.now());
@@ -158,33 +163,42 @@
         btnUnlock.innerText = "Membuka...";
         btnUnlock.disabled = true;
 
+        // BUKA TAB BARU SECARA SINKRON agar tidak diblokir Pop-up Blocker browser
         const realLinkTab = window.open('about:blank', '_blank');
 
         try {
-            // Ambil URL target berdasarkan ID yang disimpan
-            const res = await fetch(`/api/get-link/${currentId}?t=${new Date().getTime()}`);
+            // Cek URL target dengan ngirim ID dan Password sekaligus
+            const res = await fetch(`/api/get/${sessionId}/${encodeURIComponent(sessionKey)}?t=${new Date().getTime()}`);
             if (res.ok) {
                 const data = await res.json();
                 
+                // Cek iklan mana yang tadi dipakai di tugas 5 detik
                 const lastAd = sessionStorage.getItem('lastAdUsed');
-                let unlockAdDest = (lastAd === "0") ? atob(_t2) : atob(_t1);
+                let unlockAdDest;
+                
+                // Logika silang/gantian: Kalau tadi A, sekarang B. Kalau tadi B, sekarang A.
+                if (lastAd === "0") {
+                    unlockAdDest = atob(_t2); 
+                } else {
+                    unlockAdDest = atob(_t1); 
+                }
 
                 sessionStorage.clear(); 
                 
-                // 1. Tab baru diisi dengan Link Asli
+                // 1. Tab baru diisi dengan Link Asli (Video/Target asli)
                 realLinkTab.location.replace(data.url);
                 
-                // 2. Tab lama (halaman ini) diubah menjadi Iklan Silangan
+                // 2. Tab lama (Halaman ini) diubah menjadi Link Iklan Silangan
                 window.location.replace(unlockAdDest);
                 
             } else {
-                realLinkTab.close();
-                alert("Sesi kadaluarsa. Silahkan ulang dari depan.");
-                window.location.replace('/');
+                realLinkTab.close(); // Tutup tab jika gagal
+                alert("Sesi password sudah kadaluarsa atau tidak valid. Silahkan ulang.");
+                window.location.replace('index.html');
             }
         } catch (err) {
-            if(realLinkTab) realLinkTab.close();
-            alert("Gagal memuat link. Periksa koneksi internet.");
+            realLinkTab.close(); // Tutup tab jika gagal
+            alert("Gagal memuat link. Periksa koneksi internetmu.");
             btnUnlock.innerText = "Dapatkan Link Asli";
             btnUnlock.disabled = false;
         }
