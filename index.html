@@ -4,87 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masukkan Password</title>
+    
+    <!-- ANTI BOT & ANTI CACHE -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <style>
-        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
-        body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; background-color: #ffffff; font-family: "Courier New", Courier, monospace; color: #000000; }
-        #page-auth { width: 100%; max-width: 350px; padding: 20px; text-align: center; }
-        h2 { font-size: 22px; text-transform: lowercase; margin-bottom: 20px; }
-        .input-line { width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; font-size: 20px; padding: 10px 0; margin-bottom: 20px; text-align: center; font-family: inherit; letter-spacing: 3px; }
-        button { background: #000; color: #fff; border: 2px solid #000; padding: 14px; font-size: 16px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
-        button:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
-        .error { color: #d32f2f; margin-top: 15px; font-size: 14px; font-weight: bold; display: none; }
+        * { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
+        body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; background-color: #ffffff; font-family: "Courier New", Courier, monospace; color: #000000; -webkit-user-select: none; user-select: none; }
+        input { -webkit-user-select: auto; user-select: auto; }
+
+        #page-auth { width: 100%; max-width: 350px; padding: 20px; box-sizing: border-box; text-align: center; transition: transform 0.3s ease-out; }
+        #page-auth.keyboard-active { transform: translateY(-25vh); }
+
+        h2.minimal-title { margin-bottom: 5px; font-size: 22px; text-transform: lowercase; cursor: default; }
+        
+        /* Form input */
+        .input-line { width: 100%; border: none; border-bottom: 2px solid #000; background: transparent; font-size: 20px; padding: 10px 0; margin: 15px 0; text-align: center; font-family: inherit; letter-spacing: 3px; }
+        
+        button.btn-minimal { background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
+        
+        .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div id="page-auth">
-    <h2 id="title">memeriksa link...</h2>
+    <h2 class="minimal-title">masukkan password</h2>
     
-    <div id="form-area" style="display:none;">
-        <input type="text" id="passwordInput" class="input-line" placeholder="PASSWORD" autocomplete="off" spellcheck="false">
-        <button id="btnUser">Lanjut</button>
-        <div id="errorMsg" class="error"></div>
-    </div>
+    <input type="text" id="passwordInput" class="input-line" 
+           autocomplete="new-password" 
+           autocorrect="off" 
+           autocapitalize="off" 
+           spellcheck="false" 
+           data-lpignore="true">
+           
+    <button id="btnUser" class="btn-minimal">Lanjut</button>
+
+    <div id="errorMsg" class="error">password tidak valid.</div>
 </div>
 
 <script>
-    const path = window.location.pathname.split("/").filter(Boolean);
-    const linkId = path[0]; 
+    // TANGKAP ID DARI URL (contoh: domain.com/?id=abcde)
+    const urlParams = new URLSearchParams(window.location.search);
+    const linkId = urlParams.get('id');
 
-    const title = document.getElementById("title");
-    const formArea = document.getElementById("form-area");
+    // Jika di URL tidak ada ID, blokir akses
+    if (!linkId) {
+        document.getElementById("page-auth").innerHTML = "<br><br><span style='color:red; font-family:system-ui; font-weight:bold;'>⚠️ ERROR: Link Tidak Valid / ID Hilang.</span>";
+    }
+
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
     const errorMsg = document.getElementById("errorMsg");
+    const pageAuth = document.getElementById("page-auth");
 
-    // Jalankan saat load
-    window.onload = () => {
-        if (!linkId || linkId === "index.html") {
-            title.innerText = "Link Tidak Valid";
-        } else {
-            title.innerText = "masukkan password";
-            formArea.style.display = "block";
-            sessionStorage.clear(); // Bersihkan sisa sesi lama
-        }
-    };
+    window.addEventListener("pageshow", () => {
+        if(passwordInput) passwordInput.value = ""; 
+        if(btnUser) { btnUser.innerText = "Lanjut"; btnUser.disabled = false; }
+        if(errorMsg) errorMsg.style.display = "none";
+        
+        sessionStorage.removeItem('secureKey');
+        sessionStorage.removeItem('secureId');
+        sessionStorage.removeItem('taskDone');
+        localStorage.removeItem('isProcessingTask');
+    });
 
-    async function verifikasi() {
-        const pass = passwordInput.value.trim();
-        if (!pass) return;
+    async function verifikasiPassword() {
+        if (!linkId) return;
 
-        btnUser.innerText = "MEMERIKSA...";
-        btnUser.disabled = true;
+        const password = passwordInput.value.trim();
+        if (!password) return;
         errorMsg.style.display = "none";
-
+        
+        if (["ABC", "ABCD", "BALON"].includes(password.toUpperCase())) {
+            gagalVerifikasi("⚠️ Password itu hanyalah contoh, password asli ada di dalam video.");
+            return;
+        }
+        
+        btnUser.innerText = "memeriksa...";
+        btnUser.disabled = true;
+        
         try {
-            const res = await fetch('/api/verify-pass', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: linkId, password: pass })
-            });
-
+            // Cek ke worker menggunakan ID dan Password
+            const res = await fetch(`/api/get/${linkId}/${encodeURIComponent(password)}?t=${new Date().getTime()}`, { headers: { 'Cache-Control': 'no-cache' } });
+            
             if (res.ok) {
-                // Simpan ID dan Pass ke Session agar verify.html bisa ambil
-                sessionStorage.setItem('current_id', linkId);
-                sessionStorage.setItem('secureKey', pass); 
+                // Simpan ID dan Password ke Session untuk dipakai di verify.html
+                sessionStorage.setItem('secureId', linkId);
+                sessionStorage.setItem('secureKey', password);
+                passwordInput.value = ""; 
                 window.location.href = "verify.html";
             } else {
-                const data = await res.json();
-                errorMsg.innerText = data.msg || "Password salah.";
-                errorMsg.style.display = "block";
-                btnUser.innerText = "Lanjut";
-                btnUser.disabled = false;
-                passwordInput.value = "";
+                gagalVerifikasi("password tidak valid.");
             }
         } catch (err) {
-            errorMsg.innerText = "Kesalahan koneksi.";
-            errorMsg.style.display = "block";
-            btnUser.disabled = false;
+            gagalVerifikasi("error jaringan.");
         }
     }
 
-    btnUser.onclick = verifikasi;
-    passwordInput.onkeypress = (e) => { if(e.key === "Enter") verifikasi(); };
+    function gagalVerifikasi(pesan) {
+        errorMsg.innerText = pesan;
+        errorMsg.style.display = "block";
+        btnUser.innerText = "Lanjut";
+        btnUser.disabled = false;
+        passwordInput.value = "";
+        passwordInput.focus();
+    }
+
+    if(btnUser) btnUser.onclick = verifikasiPassword;
+    if(passwordInput) {
+        passwordInput.addEventListener("keypress", (e) => { if (e.key === "Enter") verifikasiPassword(); });
+        passwordInput.addEventListener('focus', () => pageAuth.classList.add('keyboard-active'));
+        passwordInput.addEventListener('blur', () => pageAuth.classList.remove('keyboard-active'));
+    }
 </script>
 </body>
 </html>
