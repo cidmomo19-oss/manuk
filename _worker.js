@@ -98,7 +98,7 @@ export default {
         const dbData = { url: targetUrl, password: password };
         await env.LINK_DB.put(randomId, JSON.stringify(dbData));
 
-        const finalLink = \`\${url.origin}/?id=\${randomId}\`;
+        const finalLink = `${url.origin}/?id=${randomId}`;
 
         return new Response(JSON.stringify({ 
             id: randomId, 
