@@ -1,141 +1,150 @@
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const path = url.pathname.split("/").filter(Boolean);
 
     // =========================================================
-    // KONFIGURASI ADMIN (Ganti kalau mau)
+    // KODE RAHASIA LU
     // =========================================================
     const URL_ADMIN = "/masuk-bawok-99"; 
     const KUNCI_API = "bawok-rahasia-77"; 
     // =========================================================
 
-    // 1. HALAMAN ADMIN
+    // 1. MUNCULKAN HALAMAN ADMIN
     if (request.method === "GET" && url.pathname === URL_ADMIN) {
-      return new Response(getAdminHTML(URL_ADMIN), { headers: { "Content-Type": "text/html" } });
+      const adminHTML = `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+          <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Admin Panel</title>
+          <style>
+              body { font-family: "Courier New", monospace; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+              .box { text-align: center; width: 340px; padding: 20px; border: 1px solid #333; }
+              input { width: 100%; border: none; border-bottom: 2px solid #555; background: transparent; color: #fff; font-size: 16px; padding: 10px 0; margin: 15px 0; outline: none; text-align: center; font-family: inherit; }
+              input:focus { border-bottom-color: #2ecc71; }
+              button { background: #2ecc71; color: #000; border: none; padding: 12px; font-size: 16px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; font-family: inherit;}
+              button:hover { background: #27ae60; }
+              .result-box { margin-top: 20px; font-size: 14px; text-align: left; background: #111; padding: 10px; border-left: 3px solid #2ecc71; display: none; word-break: break-all;}
+              .result-box a { color: #3498db; text-decoration: none; }
+          </style>
+      </head>
+      <body>
+          <div class="box">
+              <h2>ADMIN PANEL</h2>
+              <input type="password" id="key" placeholder="KUNCI API">
+              <input type="url" id="url" placeholder="URL ASLI (Target)">
+              <input type="text" id="pass" placeholder="PASSWORD CUSTOM">
+              <button onclick="save()" id="btn">BUAT LINK BARU</button>
+              
+              <div id="resBox" class="result-box">
+                  <span style="color:#2ecc71; font-weight:bold;">SUKSES!</span><br><br>
+                  Link: <a href="#" id="resLink" target="_blank"></a><br><br>
+                  Pass: <span id="resPass" style="color:#e74c3c;"></span>
+              </div>
+          </div>
+          <script>
+              async function save() {
+                  const key = document.getElementById("key").value;
+                  const url = document.getElementById("url").value;
+                  const pass = document.getElementById("pass").value;
+                  const btn = document.getElementById("btn");
+                  const resBox = document.getElementById("resBox");
+                  
+                  if(!key || !url || !pass) return alert("Isi semua bro!");
+                  
+                  btn.innerText = "LOADING..."; btn.disabled = true; resBox.style.display = "none";
+                  
+                  try {
+                      const req = await fetch('/api/create', { 
+                          method: 'POST', 
+                          headers: {'Content-Type': 'application/json'}, 
+                          body: JSON.stringify({adminKey: key, url: url, password: pass}) 
+                      });
+                      
+                      if(req.ok) { 
+                          const data = await req.json();
+                          document.getElementById("resLink").href = data.link;
+                          document.getElementById("resLink").innerText = data.link;
+                          document.getElementById("resPass").innerText = data.password;
+                          resBox.style.display = "block";
+                          
+                          document.getElementById("url").value = ""; 
+                          document.getElementById("pass").value = ""; 
+                      }
+                      else if(req.status === 401) alert("Kunci API Salah!");
+                      else alert("Gagal Simpan!");
+                  } catch(e) { alert("Error!"); }
+                  btn.innerText = "BUAT LINK BARU"; btn.disabled = false;
+              }
+          </script>
+      </body></html>
+      `;
+      return new Response(adminHTML, { headers: { "Content-Type": "text/html" } });
     }
 
-    // 2. API: BUAT LINK BARU
+    // 2. API BUAT LINK BARU (Generate Random ID)
     if (request.method === "POST" && url.pathname === "/api/create") {
       try {
         const body = await request.json();
-        if (body.adminKey !== KUNCI_API) return new Response("Unauthorized", { status: 401 });
+        if (body.adminKey !== KUNCI_API) return new Response("Akses Ditolak", { status: 401 });
 
-        const { targetUrl, password, customId } = body;
-        const id = customId || Math.random().toString(36).substring(2, 8); 
+        const { url: targetUrl, password } = body;
+        if (!targetUrl || !password) return new Response("Data Kurang", { status: 400 });
 
-        // Simpan ke KV: Key=ID, Value=JSON(url & password)
-        const data = { url: targetUrl, password: password };
-        await env.LINK_DB.put(`ID_${id}`, JSON.stringify(data));
-
-        return new Response(JSON.stringify({ id, status: "success" }), { headers: { 'Content-Type': 'application/json' } });
-      } catch (e) { return new Response("Error", { status: 500 }); }
-    }
-
-    // 3. API: VERIFIKASI PASSWORD
-    if (request.method === "POST" && url.pathname === "/api/verify-pass") {
-      try {
-        const { id, password } = await request.json();
+        // Generate Random ID (6 Karakter alfanumerik)
+        const randomId = Math.random().toString(36).substring(2, 8);
         
-        // Fitur Hardcode CUY (Opsional)
-        if (id === "CUY" && password === "CUY") {
-          return new Response(JSON.stringify({ success: true }), { status: 200 });
-        }
+        // Simpan ke KV: Kunci = ID, Value = Object (Password + Target)
+        const dbData = { url: targetUrl, password: password };
+        await env.LINK_DB.put(randomId, JSON.stringify(dbData));
 
-        const raw = await env.LINK_DB.get(`ID_${id}`);
-        if (!raw) return new Response(JSON.stringify({ success: false, msg: "ID Tidak Ditemukan" }), { status: 404 });
+        const finalLink = \`\${url.origin}/?id=\${randomId}\`;
 
-        const data = JSON.parse(raw);
-        if (data.password === password) {
-          return new Response(JSON.stringify({ success: true }), { status: 200 });
-        }
-        return new Response(JSON.stringify({ success: false, msg: "Password Salah" }), { status: 401 });
+        return new Response(JSON.stringify({ 
+            id: randomId, 
+            password: password, 
+            link: finalLink,
+            status: "success" 
+        }), { headers: { 'Content-Type': 'application/json' } });
+
       } catch (e) { return new Response("Error", { status: 500 }); }
     }
 
-    // 4. API: AMBIL URL ASLI (Setelah Tugas Selesai)
-    if (request.method === "GET" && url.pathname.startsWith("/api/get-link/")) {
-      const id = path[path.length - 1];
+    // 3. API GET / CEK LINK UNTUK USER (/api/get/ID/PASSWORD)
+    if (request.method === "GET" && url.pathname.startsWith("/api/get/")) {
+      const parts = url.pathname.split("/"); // ['', 'api', 'get', 'ID', 'PASSWORD']
+      const reqId = parts[3];
+      const reqPass = decodeURIComponent(parts[4] || "");
       
-      if (id === "CUY") {
-        return new Response(JSON.stringify({ url: "https://pokoco.co/v?id=5ukF172rO" }), { 
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
-        });
+      const headerAntiCache = {
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Access-Control-Allow-Origin': '*'
+      };
+
+      if (!reqId || !reqPass) {
+          return new Response(JSON.stringify({ error: "Data tidak lengkap" }), { status: 400, headers: headerAntiCache });
       }
 
-      const raw = await env.LINK_DB.get(`ID_${id}`);
-      if (!raw) return new Response("Not Found", { status: 404 });
-      
-      const data = JSON.parse(raw);
-      return new Response(JSON.stringify({ url: data.url }), { 
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
-      });
+      // Ambil data dari KV berdasarkan ID
+      const rawData = await env.LINK_DB.get(reqId);
+      if (!rawData) {
+          return new Response(JSON.stringify({ error: "Link tidak valid / kadaluarsa" }), { status: 404, headers: headerAntiCache });
+      }
+
+      // Parsing JSON dan Cocokkan Password
+      const data = JSON.parse(rawData);
+      if (data.password !== reqPass) {
+          return new Response(JSON.stringify({ error: "Password salah" }), { status: 401, headers: headerAntiCache });
+      }
+
+      // Sukses! Kembalikan URL aslinya
+      return new Response(JSON.stringify({ url: data.url }), { headers: headerAntiCache });
     }
 
-    // 5. ROUTING HALAMAN
-    // Jika user buka domain.com/sesuatu -> arahkan ke index.html
-    if (path.length === 1 && !path[0].includes(".") && path[0] !== "verify.html") {
-      return env.ASSETS.fetch(new Request(url.origin + "/index.html", request));
-    }
-
+    // 4. SELAIN DI ATAS, TAMPILKAN HALAMAN UTAMA (index.html)
     return env.ASSETS.fetch(request);
   }
 };
-
-function getAdminHTML(path) {
-  return `
-  <!DOCTYPE html>
-  <html lang="id">
-  <head>
-      <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Admin Panel</title>
-      <style>
-          body { font-family: "Courier New", monospace; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-          .box { text-align: center; width: 90%; max-width: 400px; padding: 20px; border: 1px solid #333; background: #0a0a0a; border-radius: 8px; }
-          h2 { color: #2ecc71; letter-spacing: 2px; }
-          input { width: 100%; border: none; border-bottom: 2px solid #333; background: transparent; color: #fff; font-size: 16px; padding: 12px 0; margin: 10px 0; outline: none; text-align: center; font-family: inherit; transition: 0.3s; }
-          input:focus { border-bottom-color: #2ecc71; }
-          button { background: #2ecc71; color: #000; border: none; padding: 15px; font-size: 16px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 20px; font-family: inherit; border-radius: 4px; }
-          #res { margin-top: 25px; word-break: break-all; padding: 15px; border: 1px dashed #2ecc71; display: none; background: rgba(46, 204, 113, 0.1); }
-          a { color: #fff; text-decoration: underline; }
-      </style>
-  </head>
-  <body>
-      <div class="box">
-          <h2>ADMIN PANEL</h2>
-          <input type="password" id="key" placeholder="KUNCI API">
-          <input type="url" id="url" placeholder="URL TARGET (Original)">
-          <input type="text" id="pass" placeholder="PASSWORD UNTUK LINK INI">
-          <input type="text" id="cid" placeholder="CUSTOM ID (Boleh Kosong)">
-          <button onclick="save()" id="btn">GENERATE LINK</button>
-          <div id="res" id="resBox"></div>
-      </div>
-      <script>
-          async function save() {
-              const key = document.getElementById("key").value, 
-                    url = document.getElementById("url").value, 
-                    pass = document.getElementById("pass").value,
-                    cid = document.getElementById("cid").value,
-                    res = document.getElementById("res"),
-                    btn = document.getElementById("btn");
-
-              if(!key || !url || !pass) return alert("Wajib isi Kunci API, URL, dan Password!");
-              
-              btn.innerText = "SEDANG MEMBUAT..."; btn.disabled = true;
-              try {
-                  const req = await fetch('/api/create', { 
-                    method: 'POST', 
-                    body: JSON.stringify({adminKey: key, targetUrl: url, password: pass, customId: cid}) 
-                  });
-                  const data = await req.json();
-                  if(req.ok) { 
-                      const finalUrl = window.location.origin + "/" + data.id;
-                      res.style.display = "block";
-                      res.innerHTML = "<strong>BERHASIL!</strong><br><br>Link Kamu:<br><a href='"+finalUrl+"' target='_blank'>"+finalUrl+"</a><br><br>Password: " + pass;
-                  } else { alert("Gagal! Kunci API mungkin salah."); }
-              } catch(e) { alert("Terjadi kesalahan sistem."); }
-              btn.innerText = "GENERATE LINK"; btn.disabled = false;
-          }
-      </script>
-  </body></html>`;
-}
