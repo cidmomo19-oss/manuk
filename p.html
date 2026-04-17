@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Tambahan interactive-widget=resizes-visual agar UI otomatis menyesuaikan ukuran keyboard HP modern -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-visual">
     <title>Verifikasi Konten</title>
     
@@ -35,8 +34,7 @@
             position: relative; z-index: 2;
         }
 
-        /* Card utama agak naik sedikit saat ngetik biar gak sempit */
-        .core-wrapper.typing { transform: translateY(-60px); }
+        .core-wrapper.typing { transform: translateY(-70px); }
 
         .badge-icon {
             width: 56px; height: 56px; background: #0f172a; border-radius: 18px; 
@@ -76,26 +74,25 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
         .shake { animation: shake 0.3s ease-in-out; }
 
-        /* WIDGET WHATSAPP DEFAULT (Di Tengah Bawah) */
+        /* WIDGET WA DEFAULT (Tengah Bawah) */
         .wa-widget {
             position: fixed; 
             bottom: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); /* Menengahkannya */
+            right: 50%; 
+            transform: translateX(50%); /* Trik agar berada tepat di tengah layar */
             background: #ffffff; border: 1px solid #e2e8f0; border-radius: 99px; 
             padding: 8px 16px 8px 10px; display: flex; align-items: center; gap: 10px; 
             text-decoration: none; color: #334155; font-size: 13px; font-weight: 600; 
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); 
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             z-index: 99; white-space: nowrap;
         }
 
-        /* KETIKA KEYBOARD NAIK (Pindah Meluncur ke Pojok Kanan) */
-        body.is-typing .wa-widget {
-            bottom: 15px; /* Jarak pas di atas keyboard */
-            left: 100%; 
-            /* Geser ke kiri sejauh lebarnya sendiri + 15px margin kanan */
-            transform: translateX(calc(-100% - 15px)); 
+        /* SAAT KEYBOARD NAIK (Geser ke Kanan Atas Keyboard) */
+        .wa-widget.keyboard-up {
+            bottom: 15px; 
+            right: 15px; 
+            transform: translateX(0); /* Lepas posisi tengah, patokan ke pojok kanan */
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
@@ -141,18 +138,36 @@
     const btnNode = document.getElementById("trig_btn");
     const errNode = document.getElementById("err_msg");
     const boxWrap = document.getElementById("box-wrap");
+    const waBtn = document.getElementById("wa-btn");
 
-    // DESAIN 404 JIKA ID KOSONG
-    if (!id_ref) {
+    // FUNGSI UNTUK MERUBAH TAMPILAN MENJADI 404
+    function tampil404() {
         document.getElementById("main-icon").style.background = "#fee2e2";
         document.getElementById("main-icon").style.color = "#ef4444";
         document.getElementById("main-icon").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
         
         document.getElementById("main-title").innerText = "Halaman Tidak Ditemukan";
-        document.getElementById("main-desc").innerText = "Tautan yang Anda tuju tidak valid, salah, atau mungkin sudah dihapus dari sistem.";
+        document.getElementById("main-desc").innerText = "Tautan yang Anda tuju tidak valid, salah, atau mungkin sudah kadaluarsa.";
         
         boxWrap.style.display = "none";
         errNode.style.display = "none";
+        waBtn.style.display = "none"; // Sembunyikan iklan WA kalau linknya invalid
+    }
+
+    // CEK APAKAH ID VALID DI DATABASE (Background Check)
+    if (!id_ref) {
+        tampil404();
+    } else {
+        // Tembak worker dengan dummy keyword untuk mengecek validasi ID nya
+        fetch(`/api/get/${id_ref}/_cek_id_aja`)
+        .then(res => {
+            // Jika worker membalas 404 (Link tidak valid / kadaluarsa), langsung block layarnya!
+            if (res.status === 404) {
+                tampil404();
+            }
+            // Jika membalas 401 (Password salah), berarti ID-nya ADA di database, biarkan layar aman.
+        })
+        .catch(e => { /* Abaikan kalau misal error jaringan sementara */ });
     }
 
     window.addEventListener("pageshow", () => {
@@ -198,14 +213,14 @@
     if(inputNode) {
         inputNode.addEventListener("keypress", (e) => { if (e.key === "Enter") prosesCek(); });
         
-        // Logika menaikkan Tombol WA ke Pojok Kanan ketika keyboard diklik
+        // Animasi ketika ngetik: Kotak naik ke atas, WA lompat ke pojok kanan
         inputNode.addEventListener('focus', () => {
             appNode.classList.add('typing');
-            document.body.classList.add('is-typing');
+            waBtn.classList.add('keyboard-up');
         });
         inputNode.addEventListener('blur', () => {
             appNode.classList.remove('typing');
-            document.body.classList.remove('is-typing');
+            waBtn.classList.remove('keyboard-up');
         });
     }
 </script>
