@@ -27,7 +27,16 @@
         button.btn-minimal { background: #000; color: #fff; border: 2px solid #000; padding: 14px 20px; font-size: 16px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
         button.btn-minimal:disabled { background: #fff; color: #aaa; border-color: #aaa; cursor: not-allowed; }
         
+        /* Tombol Opsi Kedua (Putih) */
+        button.btn-outline { background: #fff; color: #000; border: 2px solid #000; padding: 14px 20px; font-size: 14px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        button.btn-outline:hover:not(:disabled) { background: #f0f0f0; }
+        button.btn-outline:disabled { color: #aaa; border-color: #aaa; cursor: not-allowed; }
+
         .error { color: #d32f2f; margin-top: 15px; display: none; font-size: 14px; font-family: system-ui, sans-serif; line-height: 1.4; font-weight: 600; }
+        
+        .divider { margin: 25px 0 20px 0; display: flex; align-items: center; }
+        .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px dashed #ccc; }
+        .divider span { padding: 0 10px; font-size: 12px; color: #888; font-family: system-ui, sans-serif; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -44,6 +53,10 @@
            
     <button id="btnUser" class="btn-minimal">Lanjut</button>
 
+    <div class="divider"><span>ATAU</span></div>
+    
+    <button id="btnOuo" class="btn-outline">Lewati via Ouo.io</button>
+
     <div id="errorMsg" class="error">password tidak valid.</div>
 </div>
 
@@ -59,12 +72,14 @@
 
     const passwordInput = document.getElementById("passwordInput");
     const btnUser = document.getElementById("btnUser");
+    const btnOuo = document.getElementById("btnOuo");
     const errorMsg = document.getElementById("errorMsg");
     const pageAuth = document.getElementById("page-auth");
 
     window.addEventListener("pageshow", () => {
         if(passwordInput) passwordInput.value = ""; 
         if(btnUser) { btnUser.innerText = "Lanjut"; btnUser.disabled = false; }
+        if(btnOuo) { btnOuo.innerText = "Lewati via Ouo.io"; btnOuo.disabled = false; }
         if(errorMsg) errorMsg.style.display = "none";
         
         sessionStorage.removeItem('secureKey');
@@ -73,6 +88,7 @@
         localStorage.removeItem('isProcessingTask');
     });
 
+    // FUNGSI 1: CEK PASSWORD -> VERIFY.HTML
     async function verifikasiPassword() {
         if (!linkId) return;
 
@@ -87,19 +103,47 @@
         
         btnUser.innerText = "memeriksa...";
         btnUser.disabled = true;
+        btnOuo.disabled = true;
         
         try {
-            // Cek ke worker menggunakan ID dan Password
             const res = await fetch(`/api/get/${linkId}/${encodeURIComponent(password)}?t=${new Date().getTime()}`, { headers: { 'Cache-Control': 'no-cache' } });
             
             if (res.ok) {
-                // Simpan ID dan Password ke Session untuk dipakai di verify.html
                 sessionStorage.setItem('secureId', linkId);
                 sessionStorage.setItem('secureKey', password);
                 passwordInput.value = ""; 
-                window.location.href = "verify.html";
+                window.location.href = "verify.html"; // Lanjut ke halaman tugas 5 detik
             } else {
                 gagalVerifikasi("password tidak valid.");
+            }
+        } catch (err) {
+            gagalVerifikasi("error jaringan.");
+        }
+    }
+
+    // FUNGSI 2: LEWATI VIA OUO.IO (TANPA PASSWORD)
+    async function lewatiOuo() {
+        if (!linkId) return;
+        errorMsg.style.display = "none";
+        
+        btnOuo.innerText = "MEMBUAT LINK...";
+        btnOuo.disabled = true;
+        btnUser.disabled = true;
+
+        try {
+            const res = await fetch('/api/ouo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: linkId })
+            });
+
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                // Arahkan langsung ke tab baru (Ouo.io), dan biarkan form ini utuh
+                window.location.href = data.link; 
+            } else {
+                gagalVerifikasi(data.error || "Gagal membuat link Ouo.io");
             }
         } catch (err) {
             gagalVerifikasi("error jaringan.");
@@ -111,11 +155,15 @@
         errorMsg.style.display = "block";
         btnUser.innerText = "Lanjut";
         btnUser.disabled = false;
+        btnOuo.innerText = "Lewati via Ouo.io";
+        btnOuo.disabled = false;
         passwordInput.value = "";
         passwordInput.focus();
     }
 
     if(btnUser) btnUser.onclick = verifikasiPassword;
+    if(btnOuo) btnOuo.onclick = lewatiOuo;
+    
     if(passwordInput) {
         passwordInput.addEventListener("keypress", (e) => { if (e.key === "Enter") verifikasiPassword(); });
         passwordInput.addEventListener('focus', () => pageAuth.classList.add('keyboard-active'));
