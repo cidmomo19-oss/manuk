@@ -7,16 +7,7 @@ export default {
     // =========================================================
     const URL_ADMIN = "/masuk-bawok-99"; 
     const KUNCI_API = "bawok-rahasia-77"; 
-    const OUO_API_TOKEN = "qfpd1gnn"; // Token Ouo.io abang
     // =========================================================
-
-    const headerAntiCache = {
-        'Content-Type': 'application/json', 
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        'Access-Control-Allow-Origin': '*'
-    };
 
     // 1. MUNCULKAN HALAMAN ADMIN
     if (request.method === "GET" && url.pathname === URL_ADMIN) {
@@ -124,6 +115,14 @@ export default {
       const parts = url.pathname.split("/"); // ['', 'api', 'get', 'ID', 'PASSWORD']
       const reqId = parts[3];
       const reqPass = decodeURIComponent(parts[4] || "");
+      
+      const headerAntiCache = {
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Access-Control-Allow-Origin': '*'
+      };
 
       if (!reqId || !reqPass) {
           return new Response(JSON.stringify({ error: "Data tidak lengkap" }), { status: 400, headers: headerAntiCache });
@@ -145,37 +144,7 @@ export default {
       return new Response(JSON.stringify({ url: data.url }), { headers: headerAntiCache });
     }
 
-    // 4. API BIKIN OUO.IO DI SISI SERVER (ANTI BOBOL)
-    if (request.method === "POST" && url.pathname === "/api/ouo") {
-      try {
-        const body = await request.json();
-        if (!body.id) return new Response(JSON.stringify({ error: "ID Kosong" }), { status: 400, headers: headerAntiCache });
-
-        // Ambil URL Asli dari KV berdasarkan ID
-        const rawData = await env.LINK_DB.get(body.id);
-        if (!rawData) return new Response(JSON.stringify({ error: "Data tidak ditemukan" }), { status: 404, headers: headerAntiCache });
-
-        const data = JSON.parse(rawData);
-        const targetUrl = data.url;
-
-        // Tembak Server Ouo.io menggunakan API Full
-        const ouoApiUrl = `https://ouo.io/api/${OUO_API_TOKEN}?s=${encodeURIComponent(targetUrl)}`;
-        
-        const ouoFetch = await fetch(ouoApiUrl);
-        const shortLink = await ouoFetch.text();
-
-        // Validasi respon dari Ouo.io
-        if (shortLink && (shortLink.includes("ouo.io") || shortLink.includes("ouo.press"))) {
-            return new Response(JSON.stringify({ success: true, link: shortLink.trim() }), { headers: headerAntiCache });
-        } else {
-            return new Response(JSON.stringify({ error: "Gagal membuat link dari Ouo" }), { status: 500, headers: headerAntiCache });
-        }
-      } catch (e) {
-        return new Response(JSON.stringify({ error: "Terjadi kesalahan server" }), { status: 500, headers: headerAntiCache });
-      }
-    }
-
-    // 5. SELAIN DI ATAS, TAMPILKAN HALAMAN UTAMA (index.html)
+    // 4. SELAIN DI ATAS, TAMPILKAN HALAMAN UTAMA (index.html)
     return env.ASSETS.fetch(request);
   }
 };
