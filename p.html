@@ -33,7 +33,6 @@
             transform: translateY(-20px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Card naik saat ngetik biar tombol di bawahnya gak ketutupan keyboard */
         .core-wrapper.typing { transform: translateY(-80px); }
 
         .badge-icon {
@@ -75,7 +74,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .shake { animation: shake 0.3s ease-in-out; }
 
-        /* WIDGET WA (Sekarang Menyatu di Dalam Kotak Putih) */
+        /* WIDGET WA */
         .divider { margin: 20px 0 16px; height: 1px; background: #e2e8f0; width: 100%; }
 
         .wa-inline-btn {
@@ -112,7 +111,6 @@
 
     <div id="err_msg" class="alert-node">Kata kunci tidak ditemukan.</div>
 
-    <!-- Tombol WhatsApp Pindah Kesini (Di dalam kotak putih) -->
     <div id="wa-container">
         <div class="divider"></div>
         <a href="https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V" target="_blank" class="wa-inline-btn">
@@ -177,7 +175,15 @@
                 sessionStorage.setItem('_id', id_ref);
                 sessionStorage.setItem('_vx', val);
                 inputNode.value = ""; 
-                window.location.href = "verify.html"; 
+                btnNode.disabled = false; // Aktifkan tombol lagi supaya bisa dipakai kalau user kembali ke tab ini
+                
+                // COBA BUKA DI TAB BARU
+                let newTab = window.open("verify.html", "_blank");
+                
+                // JIKA TAB BARU DIBLOKIR BROWSER (POPUP BLOCKER), BUKA DI TAB YANG SAMA SEBAGAI CADANGAN
+                if(!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                    window.location.href = "verify.html";
+                }
             } else {
                 tampilError("Kata kunci salah. Cek lagi video nya.");
             }
@@ -198,8 +204,6 @@
     if(btnNode) btnNode.onclick = prosesCek;
     if(inputNode) {
         inputNode.addEventListener("keypress", (e) => { if (e.key === "Enter") prosesCek(); });
-        
-        // Animasi ketika ngetik: Kotak utama naik ke atas, sehingga WA button (di dalamnya) ikut naik dengan aman
         inputNode.addEventListener('focus', () => appNode.classList.add('typing'));
         inputNode.addEventListener('blur', () => appNode.classList.remove('typing'));
     }
