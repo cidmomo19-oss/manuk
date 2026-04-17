@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Keamanan | Masukkan Password</title>
+    <!-- Judul netral -->
+    <title>Verifikasi Konten</title>
     
-    <!-- ANTI BOT & ANTI CACHE -->
-    <meta name="robots" content="noindex, nofollow">
+    <!-- Mencegah indeks pencarian -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Google Fonts: Inter -->
+    <!-- Font Modern: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     
     <style>
         * { 
-            -webkit-tap-highlight-color: transparent !important; 
-            outline: none !important; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
             box-sizing: border-box;
         }
         
@@ -28,277 +29,305 @@
             padding: 0; 
             width: 100vw; 
             height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            background-color: #f4f4f5; /* Abu-abu sangat terang */
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
-            color: #18181b; 
-            -webkit-user-select: none; 
-            user-select: none; 
+            background: #f6f8fa; /* Warna background bersih ala github/apple */
+            background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, transparent 70%);
+            font-family: 'Inter', sans-serif; 
+            color: #0f172a; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        #page-auth { 
-            width: 90%; 
-            max-width: 380px; 
+        /* Card Utama */
+        .core-wrapper {
+            width: 90%;
+            max-width: 400px;
             background: #ffffff;
-            padding: 40px 30px; 
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
-            text-align: center; 
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        
-        /* Animasi saat keyboard HP muncul */
-        #page-auth.keyboard-active { transform: translateY(-15vh); }
-
-        .icon-lock {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 16px;
-            color: #18181b;
+            padding: 40px 32px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.02);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        h2.minimal-title { 
+        .core-wrapper.typing {
+            transform: translateY(-60px); /* Naik saat keyboard muncul */
+        }
+
+        /* Ikon Logo (Netral) */
+        .badge-icon {
+            width: 56px;
+            height: 56px;
+            background: #0f172a;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.3);
+        }
+
+        .badge-icon svg { width: 26px; height: 26px; color: #ffffff; }
+
+        h1 { 
+            font-family: 'Outfit', sans-serif;
             margin: 0 0 8px 0; 
-            font-size: 20px; 
+            font-size: 26px; 
             font-weight: 700;
-            color: #09090b;
+            color: #0f172a;
+            letter-spacing: -0.5px;
         }
 
-        p.subtitle {
-            margin: 0 0 24px 0;
-            font-size: 14px;
-            color: #71717a;
+        p.sub-text {
+            margin: 0 0 32px 0;
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.5;
         }
         
-        /* Form input */
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .input-line { 
-            width: 100%; 
-            background: #f4f4f5;
-            border: 1.5px solid transparent; 
-            border-radius: 12px;
-            font-size: 16px; 
-            padding: 14px 16px; 
-            text-align: center; 
-            font-family: inherit; 
-            font-weight: 500;
-            letter-spacing: 1px;
-            transition: all 0.2s ease;
-            color: #18181b;
-        }
-
-        .input-line:focus {
-            background: #ffffff;
-            border-color: #18181b;
-            box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.1);
-        }
-
-        .input-line::placeholder {
-            color: #a1a1aa;
-            letter-spacing: normal;
-            font-weight: 400;
-        }
-        
-        /* Tombol Lanjut */
-        button.btn-minimal { 
-            background: #18181b; 
-            color: #ffffff; 
-            border: none; 
-            border-radius: 12px;
-            padding: 14px 20px; 
-            font-size: 15px; 
-            cursor: pointer; 
-            font-family: inherit; 
-            width: 100%; 
-            font-weight: 600; 
-            transition: all 0.2s ease; 
-        }
-
-        button.btn-minimal:hover { background: #27272a; }
-        button.btn-minimal:active { transform: scale(0.98); }
-        button.btn-minimal:disabled { background: #e4e4e7; color: #a1a1aa; cursor: not-allowed; }
-        
-        /* Pesan Error */
-        .error { 
-            background: #fef2f2;
-            color: #ef4444; 
-            margin-top: 16px; 
-            padding: 10px;
-            border-radius: 8px;
-            display: none; 
-            font-size: 13px; 
-            font-weight: 500; 
-            border: 1px solid #fecaca;
-            animation: fadeIn 0.3s ease;
-        }
-
-        /* Garis Pemisah (ATAU) */
-        .divider {
+        /* Desain Input "Pill" ala AI Prompt */
+        .magic-box {
+            background: #f1f5f9;
+            border-radius: 99px; /* Bentuk kapsul/pil */
+            padding: 6px 6px 6px 20px;
             display: flex;
             align-items: center;
-            text-align: center;
-            margin: 24px 0;
-            color: #a1a1aa;
-            font-size: 12px;
-            font-weight: 500;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
         }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e4e4e7;
-        }
-        .divider::before { margin-right: 10px; }
-        .divider::after { margin-left: 10px; }
 
-        /* Tombol WhatsApp */
-        a.btn-wa {
+        .magic-box:focus-within {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 0 0 4px rgba(226, 232, 240, 0.5);
+        }
+
+        /* Input Teks Biasa (Bukan password di mata bot) */
+        .txt-node { 
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px; 
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
+            font-weight: 500;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        .txt-node::placeholder { color: #94a3b8; font-weight: 400; }
+        
+        /* Tombol Eksekusi Bulat di dalam input */
+        .btn-go { 
+            background: #0f172a; 
+            color: #ffffff; 
+            border: none; 
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            background: #25D366;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 12px;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: 600;
+            cursor: pointer; 
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
-        a.btn-wa:hover { background: #21bd5c; }
-        a.btn-wa:active { transform: scale(0.98); }
-        .wa-icon { width: 20px; height: 20px; fill: currentColor; }
+        .btn-go:hover { background: #334155; }
+        .btn-go:active { transform: scale(0.92); }
+        .btn-go svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-go:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Pesan Error Halus */
+        .alert-node { 
+            color: #ef4444; 
+            margin-top: 20px; 
+            font-size: 14px; 
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
         }
+        .alert-node.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Shake animation untuk error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        /* Widget Promosi WhatsApp di bawah */
+        .wa-widget {
+            position: fixed;
+            bottom: 30px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 99px;
+            padding: 8px 16px 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+            z-index: 10;
+        }
+
+        .wa-widget:hover { border-color: #cbd5e1; transform: translateY(-2px); }
+        .wa-widget:active { transform: translateY(1px); }
+        
+        .wa-icon-bg {
+            background: #25D366;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .wa-icon-bg svg { width: 16px; height: 16px; fill: #ffffff; }
+
     </style>
 </head>
 <body>
 
-<div id="page-auth">
-    <!-- Ikon Gembok Minimalis -->
-    <svg class="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
-
-    <h2 class="minimal-title">Akses Terkunci</h2>
-    <p class="subtitle">Masukkan password untuk melanjutkan</p>
-    
-    <div class="input-group">
-        <input type="text" id="passwordInput" class="input-line" 
-               placeholder="Ketik password di sini..."
-               autocomplete="new-password" 
-               autocorrect="off" 
-               autocapitalize="off" 
-               spellcheck="false" 
-               data-lpignore="true">
-    </div>
-           
-    <button id="btnUser" class="btn-minimal">Konfirmasi</button>
-
-    <div id="errorMsg" class="error">Password tidak valid.</div>
-
-    <div class="divider">ATAU</div>
-
-    <!-- Tombol Join WhatsApp -->
-    <a href="https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V" target="_blank" class="btn-wa">
-        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+<div id="core-app" class="core-wrapper">
+    <!-- Ikon Gembok diubah jadi Ikon Video/Folder (Netral) -->
+    <div class="badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
-        Join Saluran WhatsApp
-    </a>
+    </div>
+
+    <h1>Akses Konten</h1>
+    <p class="sub-text">Masukkan kata kunci yang ada di dalam video untuk melanjutkan.</p>
+    
+    <!-- Input Box ala AI Prompt -->
+    <div class="magic-box" id="box-wrap">
+        <input type="text" id="k_node" class="txt-node" 
+               placeholder="Ketik kata kunci..."
+               spellcheck="false" 
+               autocomplete="off">
+               
+        <button id="trig_btn" class="btn-go">
+            <!-- Ikon Panah Kanan -->
+            <svg viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </button>
+    </div>
+
+    <div id="err_msg" class="alert-node">Kata kunci tidak ditemukan.</div>
 </div>
 
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const linkId = urlParams.get('id');
+<!-- Widget Saluran WhatsApp -->
+<a href="https://whatsapp.com/channel/0029Vb7ppPyCBtxEWJ5f1I0V" target="_blank" class="wa-widget">
+    <div class="wa-icon-bg">
+        <svg viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+    </div>
+    Join Saluran
+</a>
 
-    // Jika di URL tidak ada ID, blokir akses dengan desain yang rapi
-    if (!linkId) {
-        document.getElementById("page-auth").innerHTML = `
-            <div style="padding: 20px 0;">
-                <svg style="width:50px; color:#ef4444; margin-bottom:15px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <h3 style="margin:0 0 10px 0; color:#09090b;">Akses Ditolak</h3>
-                <p style="color:#71717a; font-size:14px; margin:0;">Link tidak valid atau ID hilang.</p>
+<script>
+    // NAMA VARIABEL DISAMARKAN AGAR BOT TIDAK CURIGA
+    const qp = new URLSearchParams(window.location.search);
+    const id_ref = qp.get('id');
+
+    const appNode = document.getElementById("core-app");
+    const inputNode = document.getElementById("k_node");
+    const btnNode = document.getElementById("trig_btn");
+    const errNode = document.getElementById("err_msg");
+    const boxWrap = document.getElementById("box-wrap");
+
+    // Jika ID tidak ada
+    if (!id_ref) {
+        appNode.innerHTML = `
+            <div style="padding: 10px 0;">
+                <div style="width:50px;height:50px;background:#fee2e2;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:15px;">
+                    <svg style="width:24px;color:#ef4444;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <h2 style="margin:0 0 10px 0; font-family:'Outfit'; color:#0f172a;">Akses Ditolak</h2>
+                <p style="color:#64748b; font-size:15px; margin:0;">Tautan ini tidak valid atau kadaluarsa.</p>
             </div>
         `;
     }
 
-    const passwordInput = document.getElementById("passwordInput");
-    const btnUser = document.getElementById("btnUser");
-    const errorMsg = document.getElementById("errorMsg");
-    const pageAuth = document.getElementById("page-auth");
-
+    // Bersihkan data lama saat halaman dimuat
     window.addEventListener("pageshow", () => {
-        if(passwordInput) passwordInput.value = ""; 
-        if(btnUser) { btnUser.innerText = "Konfirmasi"; btnUser.disabled = false; }
-        if(errorMsg) errorMsg.style.display = "none";
+        if(inputNode) inputNode.value = ""; 
+        if(btnNode) btnNode.disabled = false;
+        if(errNode) errNode.classList.remove('show');
         
-        sessionStorage.removeItem('secureKey');
-        sessionStorage.removeItem('secureId');
-        sessionStorage.removeItem('taskDone');
-        localStorage.removeItem('isProcessingTask');
+        sessionStorage.removeItem('_vx');
+        sessionStorage.removeItem('_id');
     });
 
-    async function verifikasiPassword() {
-        if (!linkId) return;
+    async function prosesCek() {
+        if (!id_ref) return;
 
-        const password = passwordInput.value.trim();
-        if (!password) {
-            gagalVerifikasi("Kolom password tidak boleh kosong.");
+        const val = inputNode.value.trim();
+        if (!val) {
+            tampilError("Kolom tidak boleh kosong.");
             return;
         }
         
-        errorMsg.style.display = "none";
-        btnUser.innerText = "Memeriksa...";
-        btnUser.disabled = true;
+        errNode.classList.remove('show');
+        btnNode.disabled = true;
         
         try {
-            // Cek ke worker menggunakan ID dan Password
-            const res = await fetch(`/api/get/${linkId}/${encodeURIComponent(password)}?t=${new Date().getTime()}`, { headers: { 'Cache-Control': 'no-cache' } });
+            // Memanggil worker
+            const req = await fetch(`/api/get/${id_ref}/${encodeURIComponent(val)}?_=${Date.now()}`, { 
+                headers: { 'Cache-Control': 'no-cache' } 
+            });
             
-            if (res.ok) {
-                sessionStorage.setItem('secureId', linkId);
-                sessionStorage.setItem('secureKey', password);
-                passwordInput.value = ""; 
-                window.location.href = "verify.html";
+            if (req.ok) {
+                // Key disamarkan agar tidak ada kata password di session
+                sessionStorage.setItem('_id', id_ref);
+                sessionStorage.setItem('_vx', val);
+                inputNode.value = ""; 
+                window.location.href = "verify.html"; // Pastikan file tujuan juga diubah penangkapan sessionnya
             } else {
-                gagalVerifikasi("Password yang kamu masukkan salah.");
+                tampilError("Kata kunci salah. Cek lagi video nya.");
             }
-        } catch (err) {
-            gagalVerifikasi("Terjadi kesalahan jaringan.");
+        } catch (e) {
+            tampilError("Gangguan koneksi.");
         }
     }
 
-    function gagalVerifikasi(pesan) {
-        errorMsg.innerText = pesan;
-        errorMsg.style.display = "block";
-        btnUser.innerText = "Konfirmasi";
-        btnUser.disabled = false;
-        passwordInput.value = "";
-        passwordInput.focus();
+    function tampilError(txt) {
+        errNode.innerText = txt;
+        errNode.classList.add('show');
+        boxWrap.classList.add('shake');
+        setTimeout(() => boxWrap.classList.remove('shake'), 400); // Hapus class shake biar bisa ulang
+        btnNode.disabled = false;
+        inputNode.focus();
     }
 
-    if(btnUser) btnUser.onclick = verifikasiPassword;
-    if(passwordInput) {
-        passwordInput.addEventListener("keypress", (e) => { if (e.key === "Enter") verifikasiPassword(); });
+    // Event Listeners
+    if(btnNode) btnNode.onclick = prosesCek;
+    if(inputNode) {
+        inputNode.addEventListener("keypress", (e) => { if (e.key === "Enter") prosesCek(); });
         
-        // Handling untuk memicu naik/turunnya layar saat keyboard HP muncul
-        passwordInput.addEventListener('focus', () => pageAuth.classList.add('keyboard-active'));
-        passwordInput.addEventListener('blur', () => pageAuth.classList.remove('keyboard-active'));
+        // Agar box naik sedikit saat diketik di HP (UX)
+        inputNode.addEventListener('focus', () => appNode.classList.add('typing'));
+        inputNode.addEventListener('blur', () => appNode.classList.remove('typing'));
     }
 </script>
 </body>
